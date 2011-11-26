@@ -14,3 +14,6 @@ NEWSPIDER_MODULE = 'cyespider.spiders'
 DEFAULT_ITEM_CLASS = 'cyespider.items.CyespiderItem'
 USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
 
+
+SCHEDULER = 'cyecore.scheduler.Scheduler'
+SCHEDULER_PERSIST = False

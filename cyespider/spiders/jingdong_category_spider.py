@@ -8,18 +8,21 @@ from items.jingdong import JdCategoryItem
 from scrapy.conf import settings
 from scrapy.selector import HtmlXPathSelector
 from scrapy.spider import BaseSpider
+from scrapy.utils.url import urljoin_rfc
 import hashlib
 import sys
 
+_is_valid_url = lambda url: url.split('://', 1)[0] in set(['http', 'https', 'file'])
 
 #set pipeline
-settings.overrides['ITEM_PIPELINES'] = []
+#settings.overrides['ITEM_PIPELINES'] = ["pipelines.jingdong.JsonWritePipeline"]
 
 #Jd = jingdong
 class JdCategorySpider(BaseSpider):
     
     name = 'jingdong_category'
     allowed_domains = ['www.360buy.com']
+    baseUrl = "http://www.360buy.com"
     start_urls = ['http://www.360buy.com/allSort.aspx']
     
     def __init__(self, *a, **kw):
@@ -30,7 +33,7 @@ class JdCategorySpider(BaseSpider):
     initialize conf of spider
     '''
     def initCye(self):
-        print sys.argv
+        print settings.get("SCHEDULER")
         pass
     
     def parse(self, response):
@@ -56,7 +59,7 @@ class JdCategorySpider(BaseSpider):
                     itemt = JdCategoryItem()
                     itemt['title'] = mt_a_node.select("text()").extract()[0]
                     print "[ %s ]" % (itemt['title'])
-                    itemt['url'] = mt_a_node.select("@href").extract()[0]
+                    itemt['url'] = self.__getCompleteUrl(mt_a_node.select("@href").extract()[0])
                     key = itemt['title']+itemt['url']
                     itemt['queue_key'] = hashlib.md5(key.encode('utf8')).hexdigest().upper()
                     itemt['isdir'] = 'yes'
@@ -75,8 +78,8 @@ class JdCategorySpider(BaseSpider):
                                 text = mc_dt_node.select("text()").extract()
                                 url = mc_dt_node.select("@href").extract()
                             itemt_2['title'] = text[0] if len(text) >= 1 else ""
-                            itemt_2['url'] = url[0] if len(url) >= 1 else "" 
-                            print "-> %s" % (itemt_2['title'])
+                            itemt_2['url'] = self.__getCompleteUrl(url[0]) if len(url) >= 1 else "" 
+                            print "-> %s:%s" % (itemt_2['title'], itemt_2['url'])
                             key = itemt_2['title']+itemt_2['url']
                             itemt_2['queue_key'] = hashlib.md5(key.encode('utf8')).hexdigest().upper()
                             itemt_2['parent_key'] = itemt['queue_key']
@@ -89,7 +92,7 @@ class JdCategorySpider(BaseSpider):
                                     text = mc_em_node.select("text()").extract()
                                     itemt_3['title'] = text[0] if len(text) >= 1 else ""
                                     url = mc_em_node.select("@href").extract()
-                                    itemt_3['url'] = url[0] if len(url) >= 1 else ""
+                                    itemt_3['url'] = self.__getCompleteUrl(url[0]) if len(url) >= 1 else ""
                                     print "->  -> %s" % (itemt_3['title'])
                                     key = itemt_3['title']+itemt_3['url']
                                     itemt_3['queue_key'] = hashlib.md5(key.encode('utf8')).hexdigest().upper()
@@ -100,5 +103,12 @@ class JdCategorySpider(BaseSpider):
         category_items.extend(category_two_items)
         category_items.extend(category_thrd_items)
         return category_items
+    
+    def __getCompleteUrl(self, url_str):
+        url = url_str
+        if str is not None:
+            url = url_str if _is_valid_url(url_str) else urljoin_rfc(self.baseUrl, url_str)
+        return url
+    
     
     pass

@@ -19,3 +19,10 @@ class JdCategoryItem(Item):
     isdir = Field()
     
     pass
+
+
+class JdDataItem(Item):
+    url = Field()
+    title = Field()
+    
+    pass
