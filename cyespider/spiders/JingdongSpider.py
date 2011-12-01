@@ -5,7 +5,7 @@ Created on 2011-10-19
 @author: lixiaojun
 '''
 
-from items.jingdong import JdDataItem
+from items.jingdong import JdDataItem, JdProductItem, JdProductLoader
 from libs.cyetools import CyeRedis
 from scrapy import log
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
@@ -38,7 +38,7 @@ class JingdongSpider(CrawlSpider):
         self.log("Category Regular expression : %s" % (next_request_regx), log.INFO)
         link_extr = SgmlLinkExtractor(allow=next_request_regx)
         next_rule = Rule(link_extr, 'parse_other')
-        self.rules.append(next_rule)
+        #self.rules.append(next_rule)
         
         #To initialize start_urls
         self.seed_key = self.namespace+":"+self.name+":"+"seeds"
@@ -49,12 +49,18 @@ class JingdongSpider(CrawlSpider):
     
     def parse_product(self, rep):
         hx = HtmlXPathSelector(rep)
-        jd = JdDataItem()
         
-        jd['url'] = rep.url
-        jd['title'] = hx.select("//div[@id='name']/h1/text()").extract()
+        loader = JdProductLoader(selector=hx)
         
-        return jd
+        loader.add_value('product_url', rep.url)
+        product_id = ((rep.url).split('/')[-1]).split('.')[0]
+        loader.add_value('product_id', product_id)
+        
+        loader.add_xpath('product_title', "//div[@id='name']/h1/text()")
+        loader.add_xpath('price_img_url', "//div[@class='fl']/strong[@class='price']/img/@src[1]")
+        loader.add_xpath('product_img_url', "//div[@id='preview']//img/@src[1]")
+        
+        return loader.load_item()
     
     def parse_other(self, rep):
         self.log('Next Page: %s' % rep.url)
