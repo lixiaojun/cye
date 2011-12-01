@@ -22,7 +22,9 @@ class JdProductItem(Item):
     price_img_url = Field()
     product_img_url = Field()
     product_img_path = Field()
-    html_body = Field()
+    product_summary = Field()
+    product_specifications = Field()
+    product_detail = Field()
     
     pass
    
