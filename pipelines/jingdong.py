@@ -4,10 +4,13 @@ Created on 2011-10-18
 @author: lixiaojun
 '''
 # test by pipeline
-import json
-from scrapy.xlib.pydispatch import dispatcher
 from scrapy import signals
 from scrapy.exceptions import DropItem
+from scrapy.utils.serialize import ScrapyJSONEncoder
+from scrapy.xlib.pydispatch import dispatcher
+from twisted.internet.threads import deferToThread
+import json
+import redis
 
 class JsonWritePipeline(object):
     def __init__(self):
@@ -17,10 +20,10 @@ class JsonWritePipeline(object):
         self.file = open('items.jl', 'wb')
         
     def process_item(self, item, spider):
-        if item['queue_key'] in self.duplicates[spider]:
+        if item['product_id'] in self.duplicates[spider]:
             raise DropItem("Duplicate item found: %s", item['title'])
         else:
-            self.duplicates[spider].add(item['queue_key'])
+            self.duplicates[spider].add(item['product_id'])
             line = json.dumps(dict(item))+"\n"
             self.file.write(line)
             return item
@@ -33,10 +36,7 @@ class JsonWritePipeline(object):
     pass
 
 
-import redis
 
-from twisted.internet.threads import deferToThread
-from scrapy.utils.serialize import ScrapyJSONEncoder
 
 
 class RedisPipeline(object):
