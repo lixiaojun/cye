@@ -22,5 +22,12 @@ IMAGES_STORE = '/home/lixiaojun/scrapy'
 IMAGES_THUMBS = {
                  'small': (50, 50),
                  'big': (270, 270),
-}
+                 }
+
+MYSQLDB_CONF = {
+                'host': 'localhost',
+                'port': 3306,
+                'user': 'root',
+                'passwd': '123456'
+                }
 

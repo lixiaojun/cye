@@ -22,6 +22,7 @@ class CyeProductItem(Item):
     price_image_url = Field()
     
     product_price = Field()
+    product_image = Field()
     
     pass
 
