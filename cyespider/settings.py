@@ -17,3 +17,10 @@ USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
 
 SCHEDULER = 'cyecore.scheduler.Scheduler'
 SCHEDULER_PERSIST = False
+
+IMAGES_STORE = '/home/lixiaojun/scrapy'
+IMAGES_THUMBS = {
+                 'small': (50, 50),
+                 'big': (270, 270),
+}
+
