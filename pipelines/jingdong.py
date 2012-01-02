@@ -48,16 +48,20 @@ class CyeProductPipeline(object):
         self.prow = ProductRow()
         
     def process_item(self, item, spider):
+        self.item2Row(item, self.prow)
+        self.handle_detail(item, spider, self.prow)
         return item 
     
-    def handle_detail(self, item, spider):
+    def handle_detail(self, item, spider, row):
         if item['detail'] is not None:
             filter = getattr(CyeFilter, CyeFilter.getFilterClassName(spider.namespace))
             detail_dict = filter.handleDetail(item['detail'])
-            filter.detail2Model(detail_dict, self.prow)
+            filter.detail2Model(detail_dict, row)
     
     def item2Row(self, item, row):
-        item_keys = ['pkey', 'title', 'url', 'product_image_url']
+        for attr, value in  row.rowColumns:
+            if hasattr(item, attr):
+                row[attr] = item[attr]
             
     pass
 

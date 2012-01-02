@@ -25,12 +25,13 @@ class CyeProductItem(Item):
     price_image_url = Field() 
     detail = Field()
     
+    """"
     add_time = Field()
     producer = Field()
     production_place = Field()
     gross_weight = Field()
     name = Field()
-    
+    """
     pass
 
     
