@@ -31,11 +31,15 @@ class JingdongFilter(object):
     
     """
     @classmethod
-    def detail2Model(cls, detail, model):
-        if model is None:
+    def detail2Model(cls, detail, row):
+        if row is None:
             raise CyeFilterException("Model objects not initialized。")
+        rowkey_attrs = [ attr for attr, t in row.rowKeyColumns ]
         for key in detail.keys():
-            setattr(model, key, detail[key])
+            if key in rowkey_attrs:
+                row.assignKeyAttr(key, detail[key])
+            else:
+                setattr(row, key, detail[key])
 
 def GetFilter(prefix):
     pass

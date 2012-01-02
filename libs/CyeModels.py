@@ -38,7 +38,7 @@ class ProductRow(row.RowObject):
                   ("gross_weight", "varchar"),
                   ("status", "varchar"),
                   ("utime", "datetime")]
-    rowKeyColumns = [("pkey", "varchar"), ("id", "int4")]
+    rowKeyColumns = [("id", "int4")]
     rowTableName = "product"
     
 class CyeTbRow(row.RowObject):

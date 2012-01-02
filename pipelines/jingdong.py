@@ -14,18 +14,19 @@ from scrapy.exceptions import DropItem
 from scrapy.http import Request
 from scrapy.xlib.pydispatch import dispatcher
 import Image
+import hashlib
 import json
 import os
 
 PRICE_IMAGES_STORE = settings.get('IMAGES_STORE')
-PRODUCT_IMAGES_STORE = settings.get('IMAGES_STORE')+'/product'
+PRODUCT_IMAGES_STORE = settings.get('IMAGES_STORE')+'/images'
 
 class JsonWritePipeline(object):
     def __init__(self):
         self.duplicates = {}
         dispatcher.connect(self.spider_opened, signals.spider_opened)
         dispatcher.connect(self.spider_closed, signals.spider_closed)
-        self.file = open('product.jl', 'wb')
+        self.file = open('item.jl', 'wb')
         
     def process_item(self, item, spider):
         if item['pkey'] in self.duplicates[spider]:
@@ -46,22 +47,31 @@ class JsonWritePipeline(object):
 class CyeProductPipeline(object):
     def __init__(self):
         self.prow = ProductRow()
+        self.file = open('product.jl', 'wb')
         
     def process_item(self, item, spider):
         self.item2Row(item, self.prow)
         self.handle_detail(item, spider, self.prow)
+        line = json.dumps(dict(self.prow.__dict__))+"\n"
+        self.file.write(line)
         return item 
     
     def handle_detail(self, item, spider, row):
-        if item['detail'] is not None:
+        if hasattr(item, 'detail') and item['detail'] is not None:
             myfilter = getattr(CyeFilter, CyeFilter.getFilterClassName(spider.namespace))
             detail_dict = myfilter.handleDetail(item['detail'])
             myfilter.detail2Model(detail_dict, row)
     
     def item2Row(self, item, row):
+        row.assignKeyAttr('id', 0)
+        item_keys = item.fields.keys()
+        rowkey_attrs = [ attr for attr, t in row.rowKeyColumns ]
         for attr, value in  row.rowColumns:
-            if hasattr(item, attr):
-                row[attr] = item[attr]
+            if attr in item_keys:
+                if attr in rowkey_attrs:
+                    row.assignKeyAttr(attr, item[attr])
+                else:
+                    setattr(row, attr, item[attr])
             
     pass
 
@@ -115,7 +125,8 @@ class CyePriceImagesPipeline(ImagesPipeline):
         
 class CyeProductImagesPipeline(ImagesPipeline):
     
-    def __init__(self):
+    def __init__(self, store_uri, download_func=None):
+        super(CyeProductImagesPipeline, self).__init__(store_uri, download_func=download_func)
         self.file = open('product_image.jl', 'wb')
     
     def get_media_requests(self, item, info):
@@ -134,13 +145,13 @@ class CyeProductImagesPipeline(ImagesPipeline):
         self.file.write(line)
         return item
     
-    
-        
-    def spider_opened(self, spider):
-        self.duplicates[spider] = set()
-    
-    def spider_closed(self, spider):
-        del self.duplicates[spider]
+    def image_key(self, url):
+        image_guid = hashlib.sha1(url).hexdigest()
+        return 'images/full/%s.jpg' % (image_guid)
+
+    def thumb_key(self, url, thumb_id):
+        image_guid = hashlib.sha1(url).hexdigest()
+        return 'images/thumbs/%s/%s.jpg' % (thumb_id, image_guid)
 
     def handle_error(self,e):
         log.err(e)

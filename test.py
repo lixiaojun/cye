@@ -4,6 +4,7 @@ Created on 2012-1-2
 
 @author: qianmu.lxj
 '''
+from cyespider.items import CyeProductItem
 from libs.CyeFilter import JingdongFilter
 from libs.CyeModels import CyeTbReflector, CyeTbRow, ProductRow
 from twisted.internet import reactor
@@ -56,6 +57,10 @@ def testDetail2Model():
     
     detail2Model(detail, prow)
     printRow(prow)
+    
+    item = CyeProductItem()
+    row_keyattrs = [attr for attr, t in prow.rowKeyColumns]
+    print row_keyattrs
 
 if __name__ == '__main__':
     detail_dat = '''
@@ -70,18 +75,15 @@ if __name__ == '__main__':
                     </ul>
     '''
     
-    #testDetail2Model()
-    testdict = '8989'
-    for key in testdict.keys():
-        print key
+    testDetail2Model()
     
     print "[cyeTbReflector]"
     d = CyeTbReflector.loadObjectsFrom("cye_tb")
     
-    d.addCallback(gotCye)
+    #d.addCallback(gotCye)
     
     #insertCyeTb()
     
-    reactor.callLater(7, reactor.stop)
-    reactor.run()
+    #reactor.callLater(7, reactor.stop)
+    #reactor.run()
     pass

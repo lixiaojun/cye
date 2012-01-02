@@ -17,7 +17,8 @@ import re
 
 settings.overrides['ITEM_PIPELINES'] = ['pipelines.jingdong.JsonWritePipeline',
                                         'pipelines.jingdong.CyePriceImagesPipeline',
-                                        #'pipelines.jingdong.CyeProductImagesPipeline'
+                                        'pipelines.jingdong.CyeProductImagesPipeline',
+                                        'pipelines.jingdong.CyeProductPipeline'
                                         ]
 
 class JingdongSpider(CrawlSpider):
