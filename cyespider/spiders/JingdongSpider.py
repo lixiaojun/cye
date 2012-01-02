@@ -16,7 +16,9 @@ import hashlib
 import re
 
 settings.overrides['ITEM_PIPELINES'] = ['pipelines.jingdong.JsonWritePipeline',
-                                        'pipelines.jingdong.CyePriceImagesPipeline']
+                                        'pipelines.jingdong.CyePriceImagesPipeline',
+                                        #'pipelines.jingdong.CyeProductImagesPipeline'
+                                        ]
 
 class JingdongSpider(CrawlSpider):
     name = 'jingdong_crawl'
@@ -66,7 +68,7 @@ class JingdongSpider(CrawlSpider):
             ploader.add_value('title', self.strip_tags(product_title))
         
         ploader.add_xpath('price_image_url', "//strong[@class='price']/img/@src")
-        ploader.add_xpath('product_image_url', "//div[@id='preview']//img/@src")
+        ploader.add_xpath('origin_image_url', "//div[@id='preview']//img/@src")
         
         #ploader.add_xpath('detail', "//ul[@id='i-detail']")
         

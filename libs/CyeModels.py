@@ -56,7 +56,7 @@ class CyeTbRow(row.RowObject):
     
 
     
-productReflector = SQLReflector(giftDBpool, [ProductRow])
+ProductReflector = SQLReflector(giftDBpool, [ProductRow])
 
-cyeTbReflector = SQLReflector(cyeDBpool, [CyeTbRow])
+CyeTbReflector = SQLReflector(cyeDBpool, [CyeTbRow])
 

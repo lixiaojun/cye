@@ -4,6 +4,8 @@ Created on 2011-10-18
 @author: lixiaojun
 '''
 # test by pipeline
+from libs import CyeFilter
+from libs.CyeModels import ProductReflector, ProductRow
 from libs.pytesser.pytesser import image_to_string
 from scrapy import log, signals
 from scrapy.conf import settings
@@ -41,6 +43,24 @@ class JsonWritePipeline(object):
         del self.duplicates[spider]
     pass
 
+class CyeProductPipeline(object):
+    def __init__(self):
+        self.prow = ProductRow()
+        
+    def process_item(self, item, spider):
+        return item 
+    
+    def handle_detail(self, item, spider):
+        if item['detail'] is not None:
+            filter = getattr(CyeFilter, CyeFilter.getFilterClassName(spider.namespace))
+            detail_dict = filter.handleDetail(item['detail'])
+            filter.detail2Model(detail_dict, self.prow)
+    
+    def item2Row(self, item, row):
+        item_keys = ['pkey', 'title', 'url', 'product_image_url']
+            
+    pass
+
 
 
 class CyePriceImagesPipeline(ImagesPipeline):
@@ -69,8 +89,8 @@ class CyePriceImagesPipeline(ImagesPipeline):
         return 'price/%s' % (filename)
     
     def get_media_requests(self, item, info):
-        if item['product_image_url'] is not None:
-            image_url = item['product_image_url']
+        if item['price_image_url'] is not None:
+            image_url = item['price_image_url']
             return [Request(image_url)]
     
     def item_completed(self, results, item, info):
@@ -81,7 +101,7 @@ class CyePriceImagesPipeline(ImagesPipeline):
             full_path = PRICE_IMAGES_STORE +'/'+image_path
             im = Image.open(full_path)
             text = image_to_string(im)
-            item['product_price'] = text[2:].strip()
+            item['price'] = text[2:].strip()
         line = json.dumps(dict(item))+"\n"
         self.file.write(line)
         return item
@@ -95,8 +115,8 @@ class CyeProductImagesPipeline(ImagesPipeline):
         self.file = open('product_image.jl', 'wb')
     
     def get_media_requests(self, item, info):
-        if item['product_image_url'] is not None:
-            image_url = item['product_image_url']
+        if item['origin_image_url'] is not None:
+            image_url = item['origin_image_url']
             return [Request(image_url)]
     
     def item_completed(self, results, item, info):
@@ -104,7 +124,7 @@ class CyeProductImagesPipeline(ImagesPipeline):
         if not image_paths:
             raise DropItem("Item contains no images")
         for image_path in image_paths:
-            item['product_image'] = os.path.basename(image_path.strip())
+            item['image'] = os.path.basename(image_path.strip())
             break
         line = json.dumps(dict(item))+"\n"
         self.file.write(line)

@@ -16,13 +16,20 @@ class CyeProductItem(Item):
     pkey = Field()
     title = Field()
     url = Field()
-    detail = Field()
-
-    product_image_url = Field()
-    price_image_url = Field()
     
-    product_price = Field()
-    product_image = Field()
+    origin_image_url = Field()
+    image = Field()
+    
+    price = Field()
+    
+    price_image_url = Field() 
+    detail = Field()
+    
+    add_time = Field()
+    producer = Field()
+    production_place = Field()
+    gross_weight = Field()
+    name = Field()
     
     pass
 
