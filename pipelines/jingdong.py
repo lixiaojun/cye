@@ -54,9 +54,9 @@ class CyeProductPipeline(object):
     
     def handle_detail(self, item, spider, row):
         if item['detail'] is not None:
-            filter = getattr(CyeFilter, CyeFilter.getFilterClassName(spider.namespace))
-            detail_dict = filter.handleDetail(item['detail'])
-            filter.detail2Model(detail_dict, row)
+            myfilter = getattr(CyeFilter, CyeFilter.getFilterClassName(spider.namespace))
+            detail_dict = myfilter.handleDetail(item['detail'])
+            myfilter.detail2Model(detail_dict, row)
     
     def item2Row(self, item, row):
         for attr, value in  row.rowColumns:
