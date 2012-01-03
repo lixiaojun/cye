@@ -30,6 +30,14 @@ MYSQLDB_CONF = {
                 'user': 'root',
                 'passwd': '123456'
                 }
+
+REDISDB_CONF = {
+              'host': 'localhost',
+              'port': 6379,
+              'db': 0,
+              'passwd': 'hello1234'
+              }
+
 '''
 Updated detail time interval
 '''

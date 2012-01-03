@@ -14,7 +14,7 @@ class ProductRow(row.RowObject):
                   ("title", "varchar"),
                   ("url", "varchar"),
                   ("name", "varchar"),
-                  ("add_time", "datetime"),
+                  ("add_time", "time"),
                   ("image", "varchar"),
                   ("origin_image_url", "varchar"),
                   ("producer", "varchar"),
@@ -32,7 +32,7 @@ class ProductPriceRow(row.RowObject):
                   ("price", "varchar"),
                   ("update_time", "time")
                   ]
-    rowKeycolumns = [("id", "int4")]
+    rowKeyColumns = [("id", "int4")]
     rowTableName = "product_price"
     
 class CyeTbRow(row.RowObject):
@@ -51,6 +51,8 @@ class CyeTbRow(row.RowObject):
 
     
 ProductReflector = SQLReflector(CyeGiftDBpool, [ProductRow])
+
+PriceReflector = SQLReflector(CyeGiftDBpool, [ProductPriceRow])
 
 CyeTbReflector = SQLReflector(CyeDBpool, [CyeTbRow])
 

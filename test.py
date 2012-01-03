@@ -7,6 +7,7 @@ Created on 2012-1-2
 from cyespider.items import CyeProductItem
 from libs.CyeFilter import JingdongFilter
 from libs.CyeModels import CyeTbReflector, CyeTbRow, ProductRow
+from libs.CyeTools import CyeGiftCursor, CyeCursor
 from twisted.internet import reactor
 import datetime
 import random
@@ -26,7 +27,7 @@ def onInsert(data):
 def insertCyeTb():
     newItem = CyeTbRow()
     newItem.assignKeyAttr('id', 0)
-    newItem.assignKeyAttr('pkey', 'test'+str(random.randint(1, 999)))
+    newItem.pkey = 'test'+str(random.randint(1, 999))
     newItem.title = 'test'
     newItem.url = 'url'
     newItem.product_img_url = 'product_img_url'
@@ -70,8 +71,8 @@ def deltaTime(newtime, oldtime, mformat = '%Y-%m-%d %X'):
     newtime = time.strptime(newtime, mformat)
     oldtime = time.strptime(oldtime, mformat)
     
-    ndate = datetime.datetime(newtime[0], newtime[1], newtime[2])
-    odate = datetime.datetime(oldtime[0], oldtime[1], oldtime[2])
+    ndate = datetime.datetime(newtime[0], newtime[1], newtime[2], newtime[3], newtime[4], newtime[5])
+    odate = datetime.datetime(oldtime[0], oldtime[1], oldtime[2], oldtime[3], oldtime[4], oldtime[5])
     return (ndate - odate).days
 
 if __name__ == '__main__':
@@ -93,9 +94,20 @@ if __name__ == '__main__':
     d = CyeTbReflector.loadObjectsFrom("cye_tb")
     d.addCallback(gotCye)
     k = []
-    if k:
+    if not k:
         print deltaTime('2012-01-01 13:28:33', time.strftime('%Y-%m-%d %X', time.localtime()))
     #insertCyeTb()
+    item = CyeProductItem()
+    item['last_price'] = '24.00'
+    two = '24.00'
+    if not (None or two):
+        print item['last_price']
+    print item['last_price'] is two
+    
+    product_sql = "SELECT * FROM cye_tb WHERE id=%d" % 1
+    CyeCursor.execute(product_sql)
+    product = CyeCursor.fetchone()
+    print type(product[0])
     
     reactor.callLater(7, reactor.stop)
     reactor.run()

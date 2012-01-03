@@ -21,11 +21,14 @@ class CyeProductItem(Item):
     image = Field()
     
     price = Field()
+    last_price = Field()
+    product_id = Field()
     
     price_image_url = Field() 
     detail = Field()
-    is_update_detail = Field()
-    crawl_time = Field()
+    is_update_product = Field()
+    
+    update_time = Field()
     
     """"
     add_time = Field()

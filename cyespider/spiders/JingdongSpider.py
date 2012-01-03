@@ -6,7 +6,7 @@ Created on 2011-10-19
 '''
 
 from cyespider.items import CyeProductLoader
-from libs.cyetools import CyeRedis
+from libs.CyeTools import CyeRedis
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
@@ -16,11 +16,13 @@ import hashlib
 import re
 import time
 
-settings.overrides['ITEM_PIPELINES'] = ['pipelines.jingdong.JsonWritePipeline',
-                                        'pipelines.jingdong.CyePriceImagesPipeline',
-                                        'pipelines.jingdong.CyeProductImagesPipeline',
-                                        'pipelines.jingdong.CyeToDBPipeline'
-                                        ]
+settings.overrides['ITEM_PIPELINES'] = [
+                                        #'cyespider.pipelines.JsonWritePipeline',
+                                        'cyespider.pipelines.CyeFirstPipeline',
+                                        'cyespider.pipelines.CyePriceImagesPipeline',
+                                        'cyespider.pipelines.CyeProductImagesPipeline',
+                                        'cyespider.pipelines.CyeToDBPipeline'
+                                            ]
 
 class JingdongSpider(CrawlSpider):
     name = 'jingdong_crawl'
@@ -63,8 +65,8 @@ class JingdongSpider(CrawlSpider):
         
         ploader.add_value('url', rep.url)
         ploader.add_value('pkey', hashlib.md5(rep.url).hexdigest())
-        ploader.add_value('is_update_detail', True)
-        ploader.add_value('crawl_time', time.strftime('%Y-%m-%d %X', time.localtime()))
+        ploader.context['item']['is_update_product'] = True
+        ploader.add_value('update_time', time.strftime('%Y-%m-%d %X', time.localtime()))
         
         product_title = hx.select("//div[@id='name']/h1/text()").extract()
         if product_title is not None and len(product_title) > 0:
@@ -75,7 +77,7 @@ class JingdongSpider(CrawlSpider):
         ploader.add_xpath('origin_image_url', "//div[@id='preview']//img/@src")
         
         
-        #ploader.add_xpath('detail', "//ul[@id='i-detail']")
+        ploader.add_xpath('detail', "//ul[@id='i-detail']")
         
         return ploader.load_item()
     
