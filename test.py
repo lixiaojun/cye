@@ -8,12 +8,16 @@ from cyespider.items import CyeProductItem
 from libs.CyeFilter import JingdongFilter
 from libs.CyeModels import CyeTbReflector, CyeTbRow, ProductRow
 from twisted.internet import reactor
+import datetime
 import random
 import time
 
 def gotCye(datas):
-    info = "Got : %s\n" % "/".join([ data.pkey for data in datas ])
+    info = "Got : %s\n" % "/".join([ str(data.id) for data in datas ])
     print info
+    for i in datas:
+        if i.id == 14:
+            print i.__dict__
         
 def onInsert(data):
     print 'completed'
@@ -61,6 +65,14 @@ def testDetail2Model():
     item = CyeProductItem()
     row_keyattrs = [attr for attr, t in prow.rowKeyColumns]
     print row_keyattrs
+    
+def deltaTime(newtime, oldtime, mformat = '%Y-%m-%d %X'):
+    newtime = time.strptime(newtime, mformat)
+    oldtime = time.strptime(oldtime, mformat)
+    
+    ndate = datetime.datetime(newtime[0], newtime[1], newtime[2])
+    odate = datetime.datetime(oldtime[0], oldtime[1], oldtime[2])
+    return (ndate - odate).days
 
 if __name__ == '__main__':
     detail_dat = '''
@@ -75,15 +87,21 @@ if __name__ == '__main__':
                     </ul>
     '''
     
-    testDetail2Model()
+    #testDetail2Model()
     
     print "[cyeTbReflector]"
     d = CyeTbReflector.loadObjectsFrom("cye_tb")
-    
-    #d.addCallback(gotCye)
-    
+    d.addCallback(gotCye)
+    k = []
+    if k:
+        print deltaTime('2012-01-01 13:28:33', time.strftime('%Y-%m-%d %X', time.localtime()))
     #insertCyeTb()
     
-    #reactor.callLater(7, reactor.stop)
-    #reactor.run()
+    reactor.callLater(7, reactor.stop)
+    reactor.run()
+    
+    
     pass
+
+
+

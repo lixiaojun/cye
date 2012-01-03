@@ -24,6 +24,8 @@ class CyeProductItem(Item):
     
     price_image_url = Field() 
     detail = Field()
+    is_update_detail = Field()
+    crawl_time = Field()
     
     """"
     add_time = Field()

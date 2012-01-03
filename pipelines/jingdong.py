@@ -13,41 +13,84 @@ from scrapy.contrib.pipeline.images import ImagesPipeline
 from scrapy.exceptions import DropItem
 from scrapy.http import Request
 from scrapy.xlib.pydispatch import dispatcher
+from twisted.enterprise import reflector
 import Image
+import datetime
 import hashlib
 import json
 import os
+import time
 
 PRICE_IMAGES_STORE = settings.get('IMAGES_STORE')
-PRODUCT_IMAGES_STORE = settings.get('IMAGES_STORE')+'/images'
+TIME_FORMAT = "%Y-%m-%d %X"
+UPDATE_DETAIL_TIEM_INTERVAL = settings.get('UPDATE_DETAIL_TIEM_INTERVAL')
 
+"""
+get delta value of two time
+"""
+def DeltaTime(newtime, oldtime, mformat = TIME_FORMAT):
+    newtime = time.strptime(newtime, mformat)
+    oldtime = time.strptime(oldtime, mformat)
+    
+    ndate = datetime.datetime(newtime[0], newtime[1], newtime[2])
+    odate = datetime.datetime(oldtime[0], oldtime[1], oldtime[2])
+    return (ndate - odate).days
+    
+"""
+To test
+"""
 class JsonWritePipeline(object):
     def __init__(self):
-        self.duplicates = {}
-        dispatcher.connect(self.spider_opened, signals.spider_opened)
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
         self.file = open('item.jl', 'wb')
         
     def process_item(self, item, spider):
-        if item['pkey'] in self.duplicates[spider]:
-            raise DropItem("Duplicate item found: %s", item['title'])
-        else:
-            self.duplicates[spider].add(item['pkey'])
-            line = json.dumps(dict(item))+"\n"
-            self.file.write(line)
-            return item
-    
-    def spider_opened(self, spider):
-        self.duplicates[spider] = set()
-    
-    def spider_closed(self, spider):
-        del self.duplicates[spider]
+        line = json.dumps(dict(item))+"\n"
+        self.file.write(line)
+        return item
+            
     pass
 
-class CyeProductPipeline(object):
+"""
+Initialize Product Info
+To decide whether to update the product information 
+"""
+class CyeFirstPipeline(object):
+    def __init__(self):
+        self.file = open('first.jl', 'wb')
+        
+    def process_item(self, item, spider):
+        line = json.dumps(dict(item))+"\n"
+        self.file.write(line)
+        return item
+    
+    def getInfo(self, pkey, item):
+        if pkey is None:
+            def _callback_set_status(self, datas):
+                if datas:
+                    data = datas[0]
+                    if DeltaTime(data.update_time, item['crawl_time']) < UPDATE_DETAIL_TIEM_INTERVAL:
+                        item['is_update_detail'] = False
+                        
+            def _callback_set_price(self, datas):
+                if datas:
+                    data = datas[0]
+                    if data.price:
+                        item['price'] = data.price
+            d = ProductReflector.loadObjectsFrom("product",
+                                                 whereClause=[("pkey", reflector.EQUAL, pkey)])
+            d.addcallback(_callback_set_status)
+            
+            
+    pass
+
+
+"""
+Data writing database
+"""
+class CyeToDBPipeline(object):
     def __init__(self):
         self.prow = ProductRow()
-        self.file = open('product.jl', 'wb')
+        self.file = open('todb.jl', 'wb')
         
     def process_item(self, item, spider):
         self.item2Row(item, self.prow)
@@ -71,12 +114,13 @@ class CyeProductPipeline(object):
                 if attr in rowkey_attrs:
                     row.assignKeyAttr(attr, item[attr])
                 else:
-                    setattr(row, attr, item[attr])
-            
+                    setattr(row, attr, item[attr])    
     pass
 
 
-
+"""
+Download price's image and Processing price information
+"""
 class CyePriceImagesPipeline(ImagesPipeline):
     
     def __init__(self, store_uri, download_func=None):
@@ -123,6 +167,9 @@ class CyePriceImagesPipeline(ImagesPipeline):
     def handle_error(self,e):
         log.err(e)
         
+"""
+Download Product's image
+"""       
 class CyeProductImagesPipeline(ImagesPipeline):
     
     def __init__(self, store_uri, download_func=None):

@@ -6,6 +6,7 @@ Created on 2011-11-20
 '''
 
 from scrapy.conf import settings
+from twisted.enterprise import adbapi
 import redis
 import threading
 
@@ -38,3 +39,19 @@ class CyeRedis(object):
             CyeRedis.__inst = CyeRedis()
         CyeRedis.__lock.release()
         return CyeRedis.__inst.redis_conn
+    
+    
+'''
+Connect database
+'''
+dbconf = settings.get('MYSQLDB_CONF')
+
+DB_PORT   = dbconf.get('port', 3306)
+DB_USER   = dbconf.get('user', 'root')
+DB_HOST   = dbconf.get('host', 'localhost')
+DB_PASSWD = dbconf.get('passwd', '123456')
+
+CyeDBpool = adbapi.ConnectionPool('MySQLdb', host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
+                                  db='cye_db',use_unicode=True, charset='utf8')
+CyeGiftDBpool = adbapi.ConnectionPool("MySQLdb", host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
+                                   db='mygift',use_unicode=True, charset='utf8')

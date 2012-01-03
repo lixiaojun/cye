@@ -14,11 +14,12 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.selector import HtmlXPathSelector
 import hashlib
 import re
+import time
 
 settings.overrides['ITEM_PIPELINES'] = ['pipelines.jingdong.JsonWritePipeline',
                                         'pipelines.jingdong.CyePriceImagesPipeline',
                                         'pipelines.jingdong.CyeProductImagesPipeline',
-                                        'pipelines.jingdong.CyeProductPipeline'
+                                        'pipelines.jingdong.CyeToDBPipeline'
                                         ]
 
 class JingdongSpider(CrawlSpider):
@@ -62,6 +63,8 @@ class JingdongSpider(CrawlSpider):
         
         ploader.add_value('url', rep.url)
         ploader.add_value('pkey', hashlib.md5(rep.url).hexdigest())
+        ploader.add_value('is_update_detail', True)
+        ploader.add_value('crawl_time', time.strftime('%Y-%m-%d %X', time.localtime()))
         
         product_title = hx.select("//div[@id='name']/h1/text()").extract()
         if product_title is not None and len(product_title) > 0:
@@ -70,6 +73,7 @@ class JingdongSpider(CrawlSpider):
         
         ploader.add_xpath('price_image_url', "//strong[@class='price']/img/@src")
         ploader.add_xpath('origin_image_url', "//div[@id='preview']//img/@src")
+        
         
         #ploader.add_xpath('detail', "//ul[@id='i-detail']")
         

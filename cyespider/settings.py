@@ -30,4 +30,7 @@ MYSQLDB_CONF = {
                 'user': 'root',
                 'passwd': '123456'
                 }
-
+'''
+Updated detail time interval
+'''
+UPDATE_DETAIL_TIEM_INTERVAL = 7

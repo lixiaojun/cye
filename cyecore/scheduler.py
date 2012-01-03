@@ -8,9 +8,8 @@ Created on 2011-11-19
 
 from cyecore.dupefilter import RFPDupeFilter
 from cyecore.queue import SpiderQueue
-from libs.cyetools import CyeRedis
+from libs.CyeTools import CyeRedis
 from scrapy import log
-from scrapy.conf import settings
 
 # default values
 SCHEDULER_PERSIST = False

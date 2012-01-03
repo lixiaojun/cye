@@ -5,7 +5,7 @@ Created on 2011-11-20
 @author: lixiaojun
 '''
 
-from libs.cyetools import CyeRedis
+from libs.CyeTools import CyeRedis
 from scrapy.utils.request import request_fingerprint
 from twisted.python import hashlib
 import time
