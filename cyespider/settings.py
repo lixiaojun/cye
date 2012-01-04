@@ -32,10 +32,10 @@ MYSQLDB_CONF = {
                 }
 
 REDISDB_CONF = {
-              'host': 'localhost',
-              'port': 6379,
-              'db': 0,
-              'passwd': 'hello1234'
+                'host': 'localhost',
+                'port': 6379,
+                'db': 0,
+                'passwd': 'hello1234'
               }
 
 '''
