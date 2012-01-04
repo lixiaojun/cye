@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Define here the models for your scraped items
 #
 # See documentation in:
@@ -23,12 +24,15 @@ class CyeProductItem(Item):
     price = Field()
     last_price = Field()
     product_id = Field()
+    #product_key = pkey , to adjust for Row
+    product_pkey = Field()
     
     price_image_url = Field() 
     detail = Field()
     is_update_product = Field()
     
     update_time = Field()
+    status = Field()
     
     """"
     add_time = Field()

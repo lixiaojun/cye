@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 2011-10-18
 
@@ -70,23 +71,20 @@ class CyeFirstPipeline(object):
         return item
     
     def setInfo(self, item):
-        if 'pkey' in item.keys() and item['pkey'] is None:
+        if 'pkey' in item.keys() and item['pkey'] is not None:
             self._setItemInfo(item)
-        '''
-        if 'detail' in item.keys():
-            item['detail'] = item['detail'].encode('utf8')
-        ''' 
             
     def _setItemInfo(self, item):
         pkey = item['pkey']
-        product_sql = "SELECT * FROM product WHERE pkey=%s LIMIT 1" % pkey
+        item['product_pkey'] = item['pkey']
+        product_sql = "SELECT * FROM `product` WHERE pkey='%s' LIMIT 1" % pkey
         product = self.giftcursor.execute(product_sql)
         if product:
             product = self.giftcursor.fetchone()
             item['product_id'] = product[0]
-            if DeltaTime(str(product[-1]), item['update_time']) < UPDATE_DETAIL_TIEM_INTERVAL:
+            if DeltaTime(str(product[-2]), item['update_time']) < UPDATE_DETAIL_TIEM_INTERVAL:
                 item['is_update_product'] = False
-            price_sql = "SELECT * FROM prodcut_price WHERE pkey=%s ORDER BY update_time DESC LIMIT 1" % pkey
+            price_sql = "SELECT * FROM `product_price` WHERE product_pkey='%s' ORDER BY update_time DESC LIMIT 1" % pkey
             price = self.giftcursor.execute(price_sql)
             if price:
                 price = self.giftcursor.fetchone()
@@ -235,21 +233,26 @@ class CyeToDBPipeline(object):
                     setattr(row, attr, item[attr])
                     
     def doRow(self, item, spider):
+        
+        def _callback_info(datas):
+            pass
+        
         if item['is_update_product']:
             self._productItem2Row(item, self.prow)
             self.handle_detail(item, spider, self.prow)
-            CyeFilter.row2Unicode(self.prow)
-            ProductReflector.insertRow(self.prow).addCallback(_callback_info)
-        
+            #CyeFilter.row2Unicode(self.prow)
+            
+            if self.prow.id == 0:
+                ProductReflector.insertRow(self.prow).addCallback(_callback_info)
+            else:
+                ProductReflector.updateRow(self.prow).addCallback(_callback_info)
+            
         if not ('last_price' in item.keys()):
             item['last_price'] = "0.00"
         if 'price' in item.keys() \
             and self._isPriceChange(item['price'], item['last_price']):
             self.handle_price(item, spider, self.pricerow)
             PriceReflector.insertRow(self.pricerow).addCallback(_callback_info)
-            
-        def _callback_info():
-            pass
         
     
     """

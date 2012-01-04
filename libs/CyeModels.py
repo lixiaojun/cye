@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 2011-12-24
 
@@ -28,7 +29,7 @@ class ProductRow(row.RowObject):
 class ProductPriceRow(row.RowObject):
     rowColumns = [
                   ("id", "int"),
-                  ("product_id", "int"),
+                  ("product_pkey", "varchar"),
                   ("price", "varchar"),
                   ("update_time", "time")
                   ]

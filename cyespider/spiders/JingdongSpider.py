@@ -16,6 +16,7 @@ import hashlib
 import re
 import time
 
+
 settings.overrides['ITEM_PIPELINES'] = [
                                         #'cyespider.pipelines.JsonWritePipeline',
                                         'cyespider.pipelines.CyeFirstPipeline',
@@ -67,10 +68,11 @@ class JingdongSpider(CrawlSpider):
         ploader.add_value('pkey', hashlib.md5(rep.url).hexdigest())
         ploader.context['item']['is_update_product'] = True
         ploader.add_value('update_time', time.strftime('%Y-%m-%d %X', time.localtime()))
+        ploader.add_value('status', 'on')
         
         product_title = hx.select("//div[@id='name']/h1/text()").extract()
         if product_title is not None and len(product_title) > 0:
-            product_title = product_title[0].strip()
+            product_title = product_title[0].strip().encode('utf-8')
             ploader.add_value('title', self.strip_tags(product_title))
         
         ploader.add_xpath('price_image_url', "//strong[@class='price']/img/@src")
