@@ -41,4 +41,4 @@ REDISDB_CONF = {
 '''
 Updated detail time interval
 '''
-UPDATE_DETAIL_TIEM_INTERVAL = 7
+UPDATE_DETAIL_TIEM_INTERVAL = 0
