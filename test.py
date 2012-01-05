@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 Created on 2012-1-2
 
@@ -12,6 +11,8 @@ from twisted.internet import reactor
 import datetime
 import random
 import time
+import sys
+
 
 def gotCye(datas):
     info = "Got : %s\n" % "/".join([ str(data.id) for data in datas ])
@@ -76,6 +77,7 @@ def deltaTime(newtime, oldtime, mformat = '%Y-%m-%d %X'):
     return (ndate - odate).days
 
 if __name__ == '__main__':
+    print sys.getdefaultencoding()
     detail_dat = '''
     <ul id="i-detail">
                         <li title="宏达电S710e">商品名称：宏达电S710e</li>
@@ -103,6 +105,7 @@ if __name__ == '__main__':
     if not (None or two):
         print item['last_price']
     print item['last_price'] is two
+    print item.keys()
     
     product_sql = "SELECT * FROM cye_tb WHERE id=%d" % 1
     CyeCursor.execute(product_sql)
@@ -111,6 +114,7 @@ if __name__ == '__main__':
     
     reactor.callLater(7, reactor.stop)
     reactor.run()
+    
     
     
     pass

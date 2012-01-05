@@ -22,7 +22,7 @@ class JingdongFilter(object):
             text = ''.join(tag.findAll(text=True))
             #print text.split(cls.ITEM_SEPARATOR_DETAIL)[1]
             item = text.split(cls.ITEM_SEPARATOR_DETAIL)
-            key = item[0]
+            key = item[0].encode('utf8')
             if key in cls.ITEM_NAME_KV_DETAIL.keys():
                 dbkey = cls.ITEM_NAME_KV_DETAIL[key]
                 detail[dbkey] = item[1]

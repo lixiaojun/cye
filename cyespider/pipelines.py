@@ -209,15 +209,12 @@ class CyeToDBPipeline(object):
         pricerow.assignKeyAttr('id', 0)
         self._priceItem2Row(item, pricerow)
         
-            
-    
     def _productItem2Row(self, item, row):
         if 'product_id' in item.keys() and item['product_id']:
             row.assignKeyAttr('id', item['product_id'])
         else:
             row.assignKeyAttr('id', 0)
         self.item2Row(item, row)
-        setattr(row, 'status', None)
         
     def _priceItem2Row(self, item, row):
         self.item2Row(item, row)
