@@ -6,21 +6,19 @@ CREATE SCHEMA IF NOT EXISTS `mygift` DEFAULT CHARACTER SET utf8 COLLATE utf8_gen
 USE `mygift` ;
 
 -- -----------------------------------------------------
--- Table `mygift`.`member`
+-- Table `mygift`.`user`
 -- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `mygift`.`member` (
+CREATE  TABLE IF NOT EXISTS `mygift`.`user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `email` VARCHAR(200) NOT NULL ,
+  `username` VARCHAR(100) NOT NULL ,
   `password` VARCHAR(100) NOT NULL ,
-  `nickname` VARCHAR(100) NOT NULL ,
-  `from` VARCHAR(45) NOT NULL DEFAULT 'client' COMMENT '描述用户注册类型 from = client, web, sina' ,
-  `join_time` DATETIME NOT NULL ,
-  `last_login_ip` VARCHAR(45) NULL COMMENT '最新登录ip' ,
-  `last_login_time` DATETIME NOT NULL COMMENT '最新登录时间' ,
-  `status` VARCHAR(45) NULL DEFAULT 'normal' COMMENT '最新登录时间' ,
+  `email` VARCHAR(200) NULL ,
+  `register_time` DATETIME NOT NULL ,
+  `privilege` SMALLINT NOT NULL DEFAULT 1 COMMENT 'privilege = {0:管理员, 1:普通会员, 2:高级会员}' ,
+  `status` VARCHAR(45) NOT NULL DEFAULT 'active' COMMENT '帐户状态  status = active  locked' ,
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) ,
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) ,
-  UNIQUE INDEX `nickname_UNIQUE` (`nickname` ASC) ,
+  UNIQUE INDEX `nickname_UNIQUE` (`username` ASC) ,
   PRIMARY KEY (`id`) )
 ENGINE = MyISAM
 DEFAULT CHARACTER SET = utf8
@@ -33,11 +31,11 @@ COMMENT = '欲望清单用户表';
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `mygift`.`product_price` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `product_id` INT UNSIGNED NOT NULL COMMENT '商品id' ,
+  `product_pkey` VARCHAR(100) NOT NULL COMMENT '商品id' ,
   `price` VARCHAR(100) NULL ,
   `update_time` DATETIME NOT NULL COMMENT '价格更新时间，即为抓取到变动时间' ,
   PRIMARY KEY (`id`) ,
-  INDEX `product_key` (`product_id` ASC) )
+  INDEX `product_key` (`product_pkey` ASC) )
 ENGINE = MyISAM
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_general_ci
@@ -61,7 +59,7 @@ CREATE  TABLE IF NOT EXISTS `mygift`.`product` (
   `gross_weight` VARCHAR(100) NULL ,
   `update_time` DATETIME NOT NULL ,
   `status` VARCHAR(45) NULL DEFAULT 'on' COMMENT '商品状态 status = on, off, wait' ,
-  PRIMARY KEY (`id`) ,
+  PRIMARY KEY (`id`, `pkey`) ,
   UNIQUE INDEX `pkey_UNIQUE` (`pkey` ASC) )
 ENGINE = MyISAM
 DEFAULT CHARACTER SET = utf8
@@ -70,17 +68,17 @@ COMMENT = '商品表';
 
 
 -- -----------------------------------------------------
--- Table `mygift`.`mygift`
+-- Table `mygift`.`wishlist`
 -- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `mygift`.`mygift` (
+CREATE  TABLE IF NOT EXISTS `mygift`.`wishlist` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `member_id` INT UNSIGNED NOT NULL ,
-  `product_id` INT UNSIGNED NOT NULL ,
+  `user_id` INT UNSIGNED NOT NULL ,
+  `product_pkey` VARCHAR(100) NOT NULL ,
+  `is_shared` VARCHAR(45) NOT NULL DEFAULT 'yes' COMMENT '是否分享 is_shared = yes, no' ,
   `create_time` DATETIME NOT NULL COMMENT '愿望添加时间' ,
   `status` VARCHAR(45) NOT NULL DEFAULT 'follow' COMMENT '愿望状态 status = follow, deleted, ${product_price_id:表示已购买}' ,
-  `is_shared` VARCHAR(45) NOT NULL DEFAULT 'yes' COMMENT '是否分享 is_shared = yes, no' ,
   PRIMARY KEY (`id`) ,
-  INDEX `member_id` (`member_id` ASC) )
+  INDEX `member_id` (`user_id` ASC) )
 ENGINE = MyISAM
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_general_ci
@@ -88,34 +86,15 @@ COMMENT = '用户欲望表';
 
 
 -- -----------------------------------------------------
--- Table `mygift`.`messagebox`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `mygift`.`messagebox` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `member_id` INT UNSIGNED NOT NULL ,
-  `message` VARCHAR(1500) NOT NULL ,
-  `from` VARCHAR(45) NOT NULL DEFAULT 'system' COMMENT '消息类型 type = system, user' ,
-  `status` VARCHAR(45) NOT NULL COMMENT '消息状态 status = unread, read' ,
-  `start_time` DATETIME NOT NULL ,
-  `end_time` DATETIME NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `member_id` (`member_id` DESC) )
-ENGINE = MyISAM
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_general_ci
-COMMENT = '消息盒子';
-
-
--- -----------------------------------------------------
 -- Table `mygift`.`product_comment`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `mygift`.`product_comment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `product_id` INT UNSIGNED NOT NULL ,
-  `member_id` INT UNSIGNED NOT NULL ,
+  `product_pkey` VARCHAR(100) NOT NULL ,
+  `user_id` INT UNSIGNED NOT NULL ,
   `comment` VARCHAR(900) NOT NULL ,
   `is_anonymous` VARCHAR(45) NOT NULL DEFAULT 'no' COMMENT '是否匿名 is_anonymous = no, yes' ,
-  `create_time` DATETIME NOT NULL COMMENT '评论时间' ,
+  `comment_time` DATETIME NOT NULL COMMENT '评论时间' ,
   PRIMARY KEY (`id`) )
 ENGINE = MyISAM
 DEFAULT CHARACTER SET = utf8
