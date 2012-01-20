@@ -36,11 +36,24 @@ class ProductPriceRow(row.RowObject):
     rowKeyColumns = [("id", "int4")]
     rowTableName = "product_price"
     
-    
 
     
 ProductReflector = SQLReflector(CyeGiftDBpool, [ProductRow])
 
 PriceReflector = SQLReflector(CyeGiftDBpool, [ProductPriceRow])
 
+'''
+class CyeTbRow(row.RowObject):
+    rowColumns = [("id", "int"),
+                  ("pkey", "varchar"),
+                  ("url", "varchar"),
+                  ("title", "varchar"),
+                  ("product_img_url", "varchar"),
+                  ("product_img", "varchar"),
+                  ("detail", "varchar"),
+                  ("utime", "time")]
+    rowKeyColumns = [("id", "int4"), ("pkey", "varchar")]
+    rowTableName = "cye_tb"
+CyeTbReflector = SQLReflector(CyeDBpool, [CyeTbRow])
 
+'''

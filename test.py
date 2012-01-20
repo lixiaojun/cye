@@ -5,7 +5,7 @@ Created on 2012-1-2
 '''
 from cyespider.items import CyeProductItem
 from libs.CyeFilter import JingdongFilter
-from libs.CyeModels import ProductRow
+from libs.CyeModels import CyeTbReflector, CyeTbRow, ProductRow
 from libs.CyeTools import CyeGiftCursor, CyeCursor
 from twisted.internet import reactor
 import datetime
@@ -25,6 +25,28 @@ def onInsert(data):
     print 'completed'
     print data
           
+def insertCyeTb():
+    newItem = CyeTbRow()
+    newItem.assignKeyAttr('id', 0)
+    newItem.pkey = 'test'+str(random.randint(1, 999))
+    newItem.title = 'test'
+    newItem.url = 'url'
+    newItem.product_img_url = 'product_img_url'
+    newItem.product_img = 'product_img'
+    newItem.detail = '''
+    <ul id="i-detail">
+                        <li title="瀹忚揪鐢礢710e">鍟嗗搧鍚嶇О锛氬畯杈剧數S710e</li>
+                        <li>鐢熶骇鍘傚锛�a target="_blank" href="http://www.360buy.com/brand/5816.html">HTC</a></li>
+                        <li>鍟嗗搧浜у湴锛氫腑鍥藉ぇ闄�/li>
+                        <li>鍟嗗搧姣涢噸锛�.38</li>
+                        <li id="aeaoofnhgocdbnbeljkmbjdmhbcokfdb-mousedown">涓婃灦鏃堕棿锛�011-4-11 10:58:34</li>
+                        <li>浠锋牸涓炬姤锛氬鏋滄偍鍙戠幇鏈夋瘮浜笢浠锋牸鏇翠綆鐨勶紝<a target="_blank" href="http://myjd.360buy.com/pricetip/report/priceReport.action?id=378342">娆㈣繋涓炬姤</a></li>
+                        <li>绾犻敊淇℃伅锛氬鏋滄偍鍙戠幇鍟嗗搧淇℃伅涓嶅噯纭紝<a target="_blank" href="http://club.360buy.com/jdvote/skucheck.aspx?skuid=378342&amp;cid1=652&amp;cid2=653&amp;cid3=655">娆㈣繋绾犻敊</a></li>
+                    </ul>
+    '''
+    newItem.utime = time.strftime('%Y-%m-%d %X', time.localtime())
+    
+    CyeTbReflector.insertRow(newItem).addCallback(onInsert)
 
 def testDetail2Model():
     detail = JingdongFilter.handleDetail(detail_dat)
@@ -70,6 +92,12 @@ if __name__ == '__main__':
     
     #testDetail2Model()
     
+    print "[cyeTbReflector]"
+    d = CyeTbReflector.loadObjectsFrom("cye_tb")
+    d.addCallback(gotCye)
+    k = []
+    if not k:
+        print deltaTime('2012-01-01 13:28:33', time.strftime('%Y-%m-%d %X', time.localtime()))
     #insertCyeTb()
     item = CyeProductItem()
     item['last_price'] = '24.00'

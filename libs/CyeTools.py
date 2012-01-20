@@ -48,13 +48,16 @@ DB_USER   = mysqldbconf.get('user', 'root')
 DB_HOST   = mysqldbconf.get('host', 'localhost')
 DB_PASSWD = mysqldbconf.get('passwd', '123456')
 
-CyeDBpool = adbapi.ConnectionPool('MySQLdb', host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
-                                  db='cye_db',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf')
+
 CyeGiftDBpool = adbapi.ConnectionPool("MySQLdb", host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
                                    db='mygift',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf')
 
 CyeGiftCursor = MySQLdb.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
                                   db='mygift',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf').cursor()
+'''
+CyeDBpool = adbapi.ConnectionPool('MySQLdb', host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
+                                  db='cye_db',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf')
 
 CyeCursor = MySQLdb.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
                                   db='cye_db',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf').cursor()
+'''
