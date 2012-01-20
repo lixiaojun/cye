@@ -40,7 +40,7 @@ class JingdongSpider(CrawlSpider):
         
         self.start_urls = [
             #TT/cellphone/notebook PC/tablet PC
-            'http://www.360buy.com/products/1318-1467-1502.html',
+            #'http://www.360buy.com/products/1318-1467-1502.html',
             'http://www.360buy.com/products/652-653-655.html',
             #'http://www.360buy.com/products/670-671-672.html',
             #'http://www.360buy.com/products/670-671-2694.html'
