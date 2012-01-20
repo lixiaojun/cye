@@ -4,7 +4,7 @@ Created on 2011-12-24
 
 @author: qianmu.lxj
 '''
-from libs.CyeTools import CyeGiftDBpool, CyeDBpool
+from libs.CyeTools import CyeGiftDBpool
 from twisted.enterprise import row
 from twisted.enterprise.sqlreflector import SQLReflector
 
@@ -43,6 +43,7 @@ ProductReflector = SQLReflector(CyeGiftDBpool, [ProductRow])
 PriceReflector = SQLReflector(CyeGiftDBpool, [ProductPriceRow])
 
 '''
+from libs.CyeTools import CyeDBpool
 class CyeTbRow(row.RowObject):
     rowColumns = [("id", "int"),
                   ("pkey", "varchar"),
