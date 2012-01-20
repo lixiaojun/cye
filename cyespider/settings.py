@@ -15,10 +15,10 @@ DEFAULT_ITEM_CLASS = 'cyespider.items.CyespiderItem'
 USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
 
 
-SCHEDULER = 'cyecore.scheduler.Scheduler'
-SCHEDULER_PERSIST = False
+#SCHEDULER = 'cyecore.scheduler.Scheduler'
+#SCHEDULER_PERSIST = False
 
-IMAGES_STORE = '/home/lixiaojun/scrapy'
+IMAGES_STORE = '/home/admin/static'
 IMAGES_THUMBS = {
                  'small': (50, 50),
                  'big': (270, 270),
@@ -28,7 +28,7 @@ MYSQLDB_CONF = {
                 'host': 'localhost',
                 'port': 3306,
                 'user': 'root',
-                'passwd': '123456'
+                'passwd': 'wishlist2012'
                 }
 
 REDISDB_CONF = {
