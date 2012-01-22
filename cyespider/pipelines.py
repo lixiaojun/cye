@@ -144,6 +144,16 @@ class CyePriceImagesPipeline(ImagesPipeline):
     def handle_error(self,e):
         log.err(e)
         
+    '''
+    The results of analysis that photographs
+    '''
+    def _fixed_string(self, string):
+        string = string.lower()
+        string = string.replace('o', '0')
+        string = string.replace('s', '3')
+        string = string.replace('z', '2')
+        return string
+        
 """
 Download Product's image
 """       
