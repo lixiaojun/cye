@@ -136,6 +136,7 @@ class CyePriceImagesPipeline(ImagesPipeline):
             full_path = PRICE_IMAGES_STORE +'/'+image_path
             im = Image.open(full_path)
             text = image_to_string(im)
+            text = self._fixed_string(text)
             item['price'] = text[2:].strip()
         line = json.dumps(dict(item))+"\n"
         self.file.write(line)
