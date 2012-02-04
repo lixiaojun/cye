@@ -127,11 +127,14 @@ class CyePriceImagesPipeline(ImagesPipeline):
         if item['price_image_url'] is not None:
             image_url = item['price_image_url']
             return [Request(image_url)]
-    
+        else:
+            return None   
+
     def item_completed(self, results, item, info):
         image_paths = [x['path'] for ok, x in results if ok]
         if not image_paths:
-            raise DropItem("Item contains no images")
+            #raise DropItem("Item contains no images")
+            print "%s : Item contains no images" % self.__class__
         for image_path in image_paths:
             full_path = PRICE_IMAGES_STORE +'/'+image_path
             im = Image.open(full_path)
@@ -169,14 +172,20 @@ class CyeProductImagesPipeline(ImagesPipeline):
         if item['is_update_product'] and item['origin_image_url'] is not None:
             image_url = item['origin_image_url']
             return [Request(image_url)]
+        else:
+            return None
+        
     
     def item_completed(self, results, item, info):
         image_paths = [x['path'] for ok, x in results if ok]
         if not image_paths:
-            raise DropItem("Item contains no images")
+            #raise DropItem("Item contains no images")
+            print "%s : Item contains no images" % self.__class__
+
         for image_path in image_paths:
             item['image'] = os.path.basename(image_path.strip())
             break
+        print self.__class__
         line = json.dumps(dict(item))+"\n"
         self.file.write(line)
         return item
