@@ -4,10 +4,11 @@ by Michael J.T. O'Kelly
 V 0.0.1, 3/10/07"""
 
 import Image
-import subprocess
-
-import util
 import errors
+import subprocess
+import time
+import util
+
 
 tesseract_exe_name = 'tesseract' # Name of executable to be called at command line
 scratch_image_name = "temp.bmp" # This file must be .bmp or other Tesseract-compatible format
@@ -41,8 +42,9 @@ def image_file_to_string(filename, cleanup = cleanup_scratch_flag, graceful_erro
 	If cleanup=True, delete scratch files after operation."""
 	try:
 		try:
+			scratch_text_name_root = scratch_text_name_root+"_"+time.time()
 			call_tesseract(filename, scratch_text_name_root)
-			text = util.retrieve_text(scratch_text_name_root)
+			text = util.retrieve_text(scratch_text_name_root)	
 		except errors.Tesser_General_Exception:
 			if graceful_errors:
 				im = Image.open(filename)
