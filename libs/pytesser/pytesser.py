@@ -40,11 +40,11 @@ def image_file_to_string(filename, cleanup = cleanup_scratch_flag, graceful_erro
 	"""Applies tesseract to filename; or, if image is incompatible and graceful_errors=True,
 	converts to compatible format and then applies tesseract.  Fetches resulting text.
 	If cleanup=True, delete scratch files after operation."""
-	try:
-		try:
-			scratch_text_name_root = scratch_text_name_root+"_"+time.time()
-			call_tesseract(filename, scratch_text_name_root)
-			text = util.retrieve_text(scratch_text_name_root)	
+	my_scratch_text_name_root = scratch_text_name_root+"_"+str(time.time())
+        try:
+		try:		
+			call_tesseract(filename, my_scratch_text_name_root)
+			text = util.retrieve_text(my_scratch_text_name_root)	
 		except errors.Tesser_General_Exception:
 			if graceful_errors:
 				im = Image.open(filename)
@@ -53,7 +53,7 @@ def image_file_to_string(filename, cleanup = cleanup_scratch_flag, graceful_erro
 				raise
 	finally:
 		if cleanup:
-			util.perform_cleanup(scratch_image_name, scratch_text_name_root)
+			util.perform_cleanup(scratch_image_name, my_scratch_text_name_root)
 	return text
 	
 
