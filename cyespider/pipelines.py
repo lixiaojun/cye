@@ -134,7 +134,8 @@ class CyePriceImagesPipeline(ImagesPipeline):
         image_paths = [x['path'] for ok, x in results if ok]
         if not image_paths:
             #raise DropItem("Item contains no images")
-            print "%s : Item contains no images" % self.__class__
+            info.spider.log("%s : Item contains no images" % self.__class__, log.INFO)
+            
         for image_path in image_paths:
             full_path = PRICE_IMAGES_STORE +'/'+image_path
             im = Image.open(full_path)
@@ -180,7 +181,7 @@ class CyeProductImagesPipeline(ImagesPipeline):
         image_paths = [x['path'] for ok, x in results if ok]
         if not image_paths:
             #raise DropItem("Item contains no images")
-            print "%s : Item contains no images" % self.__class__
+            info.spider.log("%s : Item contains no images" % self.__class__, log.INFO)
 
         for image_path in image_paths:
             item['image'] = os.path.basename(image_path.strip())
