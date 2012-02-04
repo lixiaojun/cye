@@ -9,7 +9,7 @@ from libs import CyeFilter
 from libs.CyeModels import ProductReflector, ProductRow, ProductPriceRow, \
     PriceReflector
 from libs.CyeTools import CyeGiftCursor
-from libs.pytesser.pytesser import image_to_string
+from libs.pytesser.pytesser import image_to_string, image_file_to_string
 from scrapy import log, signals
 from scrapy.conf import settings
 from scrapy.contrib.pipeline.images import ImagesPipeline
@@ -135,7 +135,8 @@ class CyePriceImagesPipeline(ImagesPipeline):
         for image_path in image_paths:
             full_path = PRICE_IMAGES_STORE +'/'+image_path
             im = Image.open(full_path)
-            text = image_to_string(im)
+            #text = image_to_string(im)
+            text = image_file_to_string(full_path)
             text = self._fixed_string(text)
             item['price'] = text[2:].strip()
         line = json.dumps(dict(item))+"\n"
