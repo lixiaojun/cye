@@ -5,6 +5,7 @@ Created on 2011-12-25
 @author: qianmu.lxj
 '''
 from libs.BeautifulSoup import BeautifulSoup
+from libs.CyeTools import ProductObj
 
 FILTER_FORMAT = "%sFilter"
 
@@ -40,7 +41,15 @@ class JingdongFilter(object):
                 row.assignKeyAttr(key, detail[key])
             else:
                 setattr(row, key, detail[key])
-
+                
+    @classmethod
+    def detail2Product(cls, detail, product):
+        if not isinstance(product, ProductObj):
+            raise CyeFilterException("Model objects not initialized.")
+        #product_keys = product.__dict__.keys()
+        for key in detail.keys():
+            setattr(product, key, detail[key])
+            
 def GetFilter(prefix):
     pass
 

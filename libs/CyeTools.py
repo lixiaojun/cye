@@ -36,8 +36,8 @@ class CyeRedis(object):
             CyeRedis.__inst = CyeRedis()
         CyeRedis.__lock.release()
         return CyeRedis.__inst.redis_conn
-    
-    
+
+
 '''
 Connect database
 '''
@@ -48,16 +48,71 @@ DB_USER   = mysqldbconf.get('user', 'root')
 DB_HOST   = mysqldbconf.get('host', 'localhost')
 DB_PASSWD = mysqldbconf.get('passwd', '123456')
 
-
-CyeGiftDBpool = adbapi.ConnectionPool("MySQLdb", host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
-                                   db='mygift',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf')
-
-CyeGiftCursor = MySQLdb.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
-                                  db='mygift',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf').cursor()
 '''
-CyeDBpool = adbapi.ConnectionPool('MySQLdb', host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
-                                  db='cye_db',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf')
+New Connect database
+'''                               
+                             
+from sqlalchemy.engine import create_engine
+from sqlalchemy.orm import mapper, relationship
+from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.schema import MetaData, Table
+from sqlalchemy.types import *
+import datetime
+import time
 
-CyeCursor = MySQLdb.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, \
-                                  db='cye_db',use_unicode=True, charset='utf8', read_default_file='/etc/mysql/my.cnf').cursor()
-'''
+NOW = time.strftime('%Y-%m-%d %X', time.localtime())
+
+def tostring(dt):
+    if isinstance(dt, datetime.datetime):
+        return dt.strftime('%Y-%m-%d %X')
+    else:
+        return dt
+
+_con_str = "mysql://root:wishlist2012@localhost:3306/mygift?charset=utf8"
+dbObj = create_engine(_con_str, echo=False)
+
+metadata = MetaData(dbObj)
+
+#Base = declarative_base()
+product_tb = Table('product', metadata, autoload=True)
+product_price_tb = Table('product_price', metadata, autoload=True)
+
+class ProductPriceObj(object):
+    def _to_dict(self):
+        _dict = {}
+        key_list = ['update_time', 'price']
+        for key in key_list:
+            if key in self.__dict__.keys():
+                _dict[key] = tostring(self.__dict__[key])
+        return _dict
+    
+    def __repr__(self):
+        return "%s(%r, %r, %r, %r)" % (self.__class__.__name__, self.id, self.product_pkey, self.price, self.update_time)
+    
+class ProductObj(object):
+    def _to_dict(self):
+        _dict = {}
+        for key in self.__dict__.keys():
+            if key.find('_') >= 0:
+                continue
+            else:
+                _dict[key] = self.__dict__[key] 
+        price_key = 'history_price'
+        if price_key in dir(self):
+            _dict[price_key] = []
+            for one in self.history_price:
+                _dict[price_key].append(one._to_dict())
+        return _dict
+    
+    def __repr__(self):
+        return "%s(%r, %r, %r, %r)" % (self.__class__.__name__, self.pkey, self.title, self.name, self.update_time)
+    
+mapper(ProductObj, product_tb, properties={'history_price' : relationship(ProductPriceObj)})
+#mapper(ProductObj, product_tb)
+mapper(ProductPriceObj, product_price_tb)
+
+MygiftSession = sessionmaker(dbObj)
+
+if __name__ =="__main__":
+    pobj = ProductObj()
+    print pobj.__dict__.keys()

@@ -6,19 +6,20 @@ Created on 2011-10-19
 '''
 
 from cyespider.items import CyeProductLoader
-from libs.CyeTools import CyeRedis
+from libs.CyeTools import CyeRedis, MygiftSession
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.selector import HtmlXPathSelector
+from sqlalchemy.orm import scoped_session
 import hashlib
 import re
 import time
 
 
 settings.overrides['ITEM_PIPELINES'] = [
-                                        #'cyespider.pipelines.JsonWritePipeline',
+                                        'cyespider.pipelines.SessionPipeline',
                                         'cyespider.pipelines.CyeFirstPipeline',
                                         'cyespider.pipelines.CyePriceImagesPipeline',
                                         'cyespider.pipelines.CyeProductImagesPipeline',
@@ -31,6 +32,8 @@ class JingdongSpider(CrawlSpider):
     allowd_domains = ['360buy.com']
     baseUrl = "http://www.360buy.com/products/"
     
+    session = None
+    
     def __init__(self, *a, **kw):
         self.initCye()
         super(JingdongSpider, self).__init__(*a, **kw)
@@ -40,7 +43,7 @@ class JingdongSpider(CrawlSpider):
         
         self.start_urls = [
             #TT/cellphone/notebook PC/tablet PC
-            #'http://www.360buy.com/products/1318-1467-1502.html',
+            'http://www.360buy.com/products/1318-1467-1502.html',
             'http://www.360buy.com/products/652-653-655.html',              #手机
             'http://www.360buy.com/products/670-671-672.html',              #笔记本电脑
             'http://www.360buy.com/products/670-671-2694.html',             #平板电脑
@@ -56,8 +59,9 @@ class JingdongSpider(CrawlSpider):
          ]
         self.rules.append(self._getNextRuleByUrl(self.start_urls, 'parse_Request'))
         
-        #To initialize start_urls
-        self.seed_key = self.namespace + ":" + self.name + ":" + "seeds"
+        self.session = scoped_session(MygiftSession)
+        
+        #self.urls_key = settings.get('REDIS_URLS_KEY', '%s:urls') % self.namespace
         
         #redis instance
         self.redis_cli = CyeRedis.getInstance()
@@ -72,7 +76,7 @@ class JingdongSpider(CrawlSpider):
         ploader.add_value('pkey', hashlib.md5(rep.url).hexdigest())
         ploader.context['item']['is_update_product'] = True
         ploader.add_value('update_time', time.strftime('%Y-%m-%d %X', time.localtime()))
-        ploader.add_value('status', 'on')
+        ploader.add_value('pstatus', 'on')
         
         product_title = hx.select("//div[@id='name']/h1/text()").extract()
         if product_title is not None and len(product_title) > 0:

@@ -32,7 +32,9 @@ class CyeProductItem(Item):
     is_update_product = Field()
     
     update_time = Field()
-    status = Field()
+    pstatus = Field()
+    
+    product = Field()
     
     """"
     add_time = Field()
