@@ -41,17 +41,7 @@ class JingdongSpider(CrawlSpider):
         
     def initCye(self):
         
-        self.start_urls = [
-            #TT/cellphone/notebook PC/tablet PC
-            #'http://www.360buy.com/products/1318-1467-1502.html',
-            'http://www.360buy.com/products/652-653-655.html',              #手机
-            'http://www.360buy.com/products/670-671-672.html',              #笔记本电脑
-            'http://www.360buy.com/products/670-671-2694.html',             #平板电脑
-            'http://www.360buy.com/products/670-671-673.html',              #台式机
-            'http://www.360buy.com/products/652-654-831.html',              #数码相机
-            'http://www.360buy.com/products/652-654-832.html',              #单反相机
-            'http://www.360buy.com/products/652-654-834.html',              #单反镜头
-         ]
+        self.start_urls = (settings.get('START_URLS'))[self.namespace]
         
         
         self.rules = [
@@ -109,12 +99,13 @@ class JingdongSpider(CrawlSpider):
     '''
     def _getNextRuleByUrl(self, urls, func_name='parse_nothing'):
         allows = []
-        reg_suffix = r"(-\d){9}(-\d{1,4})\.html"
+        reg_suffix = [r"(-\d){9}(-\d{1,4})(-\d+)*\.html",]
         for x in urls:
             tmp = (x.split('/')[-1]).split('.')[0]
             if tmp is not None and len(tmp) > 0:
-                tmp += reg_suffix
-                allows.append(tmp)
+                for it in reg_suffix:
+                    tmp += it
+                    allows.append(tmp)
         if len(allows) == 0:
             tmp = r'\d{3,6}-\d{3,6}-\d{3,6}' + reg_suffix
             allows.append(tmp)
