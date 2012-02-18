@@ -45,12 +45,12 @@ class JingdongSpider(CrawlSpider):
             #TT/cellphone/notebook PC/tablet PC
             #'http://www.360buy.com/products/1318-1467-1502.html',
             'http://www.360buy.com/products/652-653-655.html',              #手机
-            'http://www.360buy.com/products/670-671-672.html',              #笔记本电脑
-            'http://www.360buy.com/products/670-671-2694.html',             #平板电脑
-            'http://www.360buy.com/products/670-671-673.html',              #台式机
-            'http://www.360buy.com/products/652-654-831.html',              #数码相机
-            'http://www.360buy.com/products/652-654-832.html',              #单反相机
-            'http://www.360buy.com/products/652-654-834.html',              #单反镜头
+            #'http://www.360buy.com/products/670-671-672.html',              #笔记本电脑
+            #'http://www.360buy.com/products/670-671-2694.html',             #平板电脑
+            #'http://www.360buy.com/products/670-671-673.html',              #台式机
+            #'http://www.360buy.com/products/652-654-831.html',              #数码相机
+            #'http://www.360buy.com/products/652-654-832.html',              #单反相机
+            #'http://www.360buy.com/products/652-654-834.html',              #单反镜头
          ]
         
         
