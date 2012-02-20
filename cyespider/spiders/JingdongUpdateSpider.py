@@ -3,21 +3,34 @@ Created on 2012-2-16
 
 @author: lixiaojun
 '''
-from libs.CyeTools import MygiftSession
+from cyespider.items import CyeProductLoader
+from cyespider.spiders.JingdongSpider import JingdongSpider
+from libs.CyeTools import MygiftSession, CyeRedis, ProductObj
+from scrapy import log
 from scrapy.conf import settings
 from scrapy.http import Request
 from scrapy.selector import HtmlXPathSelector
 from scrapy.spider import BaseSpider
 from sqlalchemy.orm import scoped_session
+import hashlib
 import re
+import time
 #from fooSpider.pipelines import FooPipeline
 #settings.overrides['ITEM_PIPELINES'] = ['fooSpider.pipelines.FooImagePipeline']
+
+crawl_time_interval = settings.get('UPDATE_CRAWL_TIME_INTERVAL', 6)
+lite_max_num = settings.get('UPDATE_CRAWL_TIME_INTERVAL', 15)
+update_max_num = settings.get('UPDATE_CRAWL_MAX_NUM', 1500)
 
 class JingdongUpdateSpider(BaseSpider):
     name = "jingdong_update"
     namespace = "jingdong"
-    base_url = "http://www.360buy.com"
-    start_urls = ["http://www.360buy.com"]
+    base_url = "http://www.360buy.com/"
+    start_urls = [
+                    #"http://www.360buy.com/product/358209.html", 
+                    #"http://www.360buy.com/product/507269.html", 
+                    #"http://www.360buy.com/product/341970.html",
+                  ]
     
     def __init__(self, **kw):
         self._init_urls()
@@ -25,30 +38,75 @@ class JingdongUpdateSpider(BaseSpider):
         
     def _init_urls(self):
         self.session = scoped_session(MygiftSession)
-        self.urls_key = settings.get('REDIS_URLS_KEY', '%s:urls') % self.namespace
+        query = self.session.query(ProductObj.url)
+        results = query.filter("last_crawl_time<DATE_ADD(NOW(), INTERVAL :time_interval HOUR)").\
+            params(time_interval=crawl_time_interval).limit(update_max_num).all()
+        for url, in results:
+            self.start_urls.append(url)
+        self.log('Update the number of links : %d' % len(results), log.INFO)
+
+    def parse(self, response):
+        if self.isJingdongProduct(response.url):
+            return self.parse_product(response)
+        
+    def parse_product(self, rep):
+        return JingdongSpider.responseToItem(rep)
+
+    def strip_tags(self, html):
+        html = html.strip()
+        html = html.strip("\n")
+        p = re.compile(r'<.*?>')
+        return p.sub('', html)
+    
+    def isJingdongProduct(self, url):
+        flag = False
+        regExp = "360buy\.com/product/\d+\.(html)"
+        match = re.search(regExp, url)
+        if match:
+            flag = True
+        return flag
+    
+
+class JingdongUpdateLiteSpider(BaseSpider):
+    name = "jingdong_update_lite"
+    namespace = "jingdong"
+    base_url = "http://www.360buy.com/"
+    start_urls = []
+    
+    def __init__(self, **kw):
+        self._init_urls()
+        super(JingdongUpdateLiteSpider, self).__init__(self.name, **kw)
+        
+    def _init_urls(self):
+        self.redis_cli = CyeRedis.getInstance()
+        self.session = scoped_session(MygiftSession)
+        self.update_urls_key = settings.get('REDIS_UPDATE_URLS_KEY', '%s:update') % self.namespace
+        results = self.redis_cli.zrange(self.update_urls_key, 0, lite_max_num, withscores=True)
+        
+        if results:
+            self.start_urls.extend(results)
+            self.log("The number of  links : %d" % len(results), log.INFO)
+        else:
+            self.log("Not fount link to update.", log.INFO)
         
 
     def parse(self, response):
-        hxs = HtmlXPathSelector(response)
-        links = hxs.select('//div[@id="plist"]/ul[@class="list-h"]/li/div[@class="p-img"]/a/@href').extract()
-        #print links
-        for link in links:
-            #print link
-            request = Request(link, callback=self.parse_post)
-            yield request
+        if self.isJingdongProduct(response.url):
+            return self.parse_product(response)
+        
+    def parse_product(self, rep):
+        return JingdongSpider.responseToItem(rep)
 
-        link = hxs.select('//a[@class="next"]/@href').extract()[0]
-        url = self.base_url+link
-        #print "next url:"+url
-        request = Request(url, callback=self.parse)
-        yield request
-
-    def parse_post(self, response):
-        pass
-
-    def parse_response(self, response):
-        pass
-
-    def striphtml(self, data):
+    def strip_tags(self, html):
+        html = html.strip()
+        html = html.strip("\n")
         p = re.compile(r'<.*?>')
-        return p.sub('', data)
+        return p.sub('', html)
+    
+    def isJingdongProduct(self, url):
+        flag = False
+        regExp = "360buy\.com/product/\d+\.(html)"
+        match = re.search(regExp, url)
+        if match:
+            flag = True
+        return flag

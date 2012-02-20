@@ -6,7 +6,7 @@ Created on 2011-10-19
 '''
 
 from cyespider.items import CyeProductLoader
-from libs.CyeTools import CyeRedis, MygiftSession
+from libs.CyeTools import CyeRedis, MygiftSession, ProductObj
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
@@ -58,28 +58,11 @@ class JingdongSpider(CrawlSpider):
         
     
     def parse_product(self, rep):
-        hx = HtmlXPathSelector(rep)
-        
-        ploader = CyeProductLoader(selector=hx)
-        
-        ploader.add_value('url', rep.url)
-        ploader.add_value('pkey', hashlib.md5(rep.url).hexdigest())
-        ploader.context['item']['is_update_product'] = True
-        ploader.add_value('update_time', time.strftime('%Y-%m-%d %X', time.localtime()))
-        ploader.add_value('pstatus', 'on')
-        
-        product_title = hx.select("//div[@id='name']/h1/text()").extract()
-        if product_title is not None and len(product_title) > 0:
-            product_title = product_title[0].strip().encode('utf-8')
-            ploader.add_value('title', self.strip_tags(product_title))
-        
-        ploader.add_xpath('price_image_url', "//strong[@class='price']/img/@src")
-        ploader.add_xpath('origin_image_url', "//div[@id='preview']//img/@src")
-        
-        
-        ploader.add_xpath('detail', "//ul[@id='i-detail']")
-        
-        return ploader.load_item()
+        pkey = hashlib.md5(rep.url).hexdigest()
+        query = self.session.query(ProductObj)
+        product = query.filter(ProductObj.pkey == pkey).first()
+        if product is None:
+            return JingdongSpider.responseToItem(rep)
     
     '''
     Handle new Request
@@ -117,12 +100,36 @@ class JingdongSpider(CrawlSpider):
         next_rule = Rule(link_extr, func_name)
         return next_rule
         
-    
-    def strip_tags(self, html):
+    @classmethod
+    def strip_tags(cls, html):
         html = html.strip()
         html = html.strip("\n")
         p = re.compile(r'<.*?>')
         return p.sub('', html)
+    
+    @classmethod
+    def responseToItem(cls, rep):
+        hx = HtmlXPathSelector(rep)
         
+        ploader = CyeProductLoader(selector=hx)
+        
+        ploader.add_value('url', rep.url)
+        ploader.add_value('pkey', hashlib.md5(rep.url).hexdigest())
+        ploader.context['item']['is_update_product'] = True
+        ploader.add_value('update_time', time.strftime('%Y-%m-%d %X', time.localtime()))
+        ploader.add_value('pstatus', 'on')
+        
+        product_title = hx.select("//div[@id='name']/h1/text()").extract()
+        if product_title is not None and len(product_title) > 0:
+            product_title = product_title[0].strip().encode('utf-8')
+            ploader.add_value('title', cls.strip_tags(product_title))
+        
+        ploader.add_xpath('price_image_url', "//strong[@class='price']/img/@src")
+        ploader.add_xpath('origin_image_url', "//div[@id='preview']//img/@src")
+        
+        
+        ploader.add_xpath('detail', "//ul[@id='i-detail']")
+        
+        return ploader.load_item()
     
     pass

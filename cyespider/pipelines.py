@@ -73,6 +73,8 @@ class SessionPipeline(object):
         try:
             spider.session.commit()
             spider.log("%s : Session commit." % self.__class__, log.INFO)
+            
+            self._treate_closed(spider)
         except:
             spider.session.rollback()
             spider.log("%s : Session rollback." % self.__class__, log.ERROR)
@@ -83,6 +85,12 @@ class SessionPipeline(object):
         
     def process_item(self, item, spider):
         return item
+    
+    def _treate_closed(self, spider):
+        if spider.name == 'jingdong_update_lite':
+            for url in spider.start_urls:
+                spider.redis_cli.zrem(spider.update_urls_key, url)
+                spider.log('Redis remove the number of links : %d' % len(spider.start_urls), log.INFO)
         
     
 
@@ -131,7 +139,6 @@ class CyePriceImagesPipeline(ImagesPipeline):
     
     def __init__(self, store_uri, download_func=None):
         super(CyePriceImagesPipeline, self).__init__(store_uri, download_func=download_func)        
-        self.file = open('price.jl', 'wb')
 
     @classmethod
     def from_settings(cls, settings):
@@ -150,11 +157,12 @@ class CyePriceImagesPipeline(ImagesPipeline):
         return 'price/%s' % (filename)
     
     def get_media_requests(self, item, info):
-        if item['price_image_url'] is not None:
+        if 'price_image_url' in item.keys() and item['price_image_url'] is not None:
             image_url = item['price_image_url']
             return [Request(image_url)]
         else:
-            return None   
+            info.spider.log("Not found price%s" % self.testzItem(item), log.DEBUG)
+            return None
 
     def item_completed(self, results, item, info):
         image_paths = [x['path'] for ok, x in results if ok]
@@ -174,24 +182,10 @@ class CyePriceImagesPipeline(ImagesPipeline):
                 item['price'] = None
                 raise
             
-        self.test(item)
         return item
 
     def handle_error(self,e):
         log.err(e)
-        
-    def test(self, item):
-        test = dict()
-        item_keys = item.keys()
-        if item['is_update_product']:       
-            product_keys = ['is_update_product', 'pkey', 'price', 'last_price', 'url', 'image', 'origin_image_url', 'update_time', 'pstatus', 'product_id']
-        else:
-            product_keys = ['is_update_product', 'pkey', 'price', 'last_price', 'update_time']
-        for ckey in product_keys:
-                if ckey in item_keys:
-                    test[ckey] = item[ckey]
-        line = json.dumps(test)+"\n"
-        self.file.write(line)
         
     '''
     The results of analysis that photographs
@@ -202,6 +196,16 @@ class CyePriceImagesPipeline(ImagesPipeline):
         string = string.replace('s', '3')
         string = string.replace('z', '2')
         return string
+    
+    def testzItem(self, item):
+        test = dict()
+        item_keys = item.keys()
+        product_keys = ['is_update_product', 'pkey', 'price', 'last_price', 'url', 'price_image_url', 'origin_image_url', 'update_time', 'pstatus', 'product_id']
+        for ckey in product_keys:
+                if ckey in item_keys:
+                    test[ckey] = item[ckey]
+        line = json.dumps(test)
+        return line
         
 """
 Download Product's image
@@ -210,7 +214,6 @@ class CyeProductImagesPipeline(ImagesPipeline):
     
     def __init__(self, store_uri, download_func=None):
         super(CyeProductImagesPipeline, self).__init__(store_uri, download_func=download_func)
-        self.file = open('product_image.jl', 'wb')
     
     def get_media_requests(self, item, info):
         if item['is_update_product'] and item['origin_image_url'] is not None:
@@ -242,19 +245,6 @@ class CyeProductImagesPipeline(ImagesPipeline):
     def handle_error(self,e):
         log.err(e)
         
-    def test(self, item):
-        test = dict()
-        item_keys = item.keys()
-        if item['is_update_product']:       
-            product_keys = ['is_update_product', 'pkey', 'price', 'last_price', 'url', 'image', 'origin_image_url', 'update_time', 'pstatus', 'product_id']
-        else:
-            product_keys = ['is_update_product', 'pkey', 'price', 'last_price', 'update_time']
-        for ckey in product_keys:
-                if ckey in item_keys:
-                    test[ckey] = item[ckey]
-        line = json.dumps(test)+"\n"
-        self.file.write(line)
-
 
 """
 Data writing database
@@ -263,8 +253,6 @@ class CyeToDBPipeline(object):
     def __init__(self):
         self.product = None
         self.price = None
-        self.file = open('price_change.jl', 'wb')
-        self.last = open('last.jl', 'wb')
         
     def process_item(self, item, spider):
         self.doComplete(item, spider)
@@ -283,6 +271,8 @@ class CyeToDBPipeline(object):
             if item['product_id'] is None or item['is_update_product']:
                 self._item_to_product(item, self.product)
                 self._handle_detail(item, spider, self.product)
+            if 'update_time' in item.keys():
+                self.product.last_crawl_time = item['update_time']
     
     def _item_to_product(self, item, product):
         item_keys = item.keys()
@@ -313,17 +303,16 @@ class CyeToDBPipeline(object):
                     
     def doComplete(self, item, spider):
         self._treate_product(item, spider)
-        self._treate_price(item, spider)
-        
-        self.test(item)
+        self._treate_price(item, spider)      
         
         if self.product:
             spider.session.add(self.product)
         if self.price:
             spider.session.add(self.price)
-            self.testChange(item)
-            
-        #spider.session.flush()
+            spider.log("%s" % self.__class__, log.INFO)
+            spider.log("Update Price : %s" % self.testChange(item), log.DEBUG)
+            #self.testChange(item)
+
     def hasPriceChange(self, one, two):
         if (two is not None) and cmp(one, two) == -1:
             return True
@@ -337,15 +326,5 @@ class CyeToDBPipeline(object):
         test['last_price'] = item['last_price']
         test['price'] = item['price']
         
-        line = json.dumps(test)+"\n"
-        self.file.write(line)
-        
-    def test(self, item):
-        test = dict()
-        item_keys = item.keys()
-        product_keys = ['is_update_product', 'pkey', 'price', 'last_price', 'url', 'image', 'origin_image_url', 'update_time', 'pstatus', 'product_id']
-        for ckey in product_keys:
-                if ckey in item_keys:
-                    test[ckey] = item[ckey]
-        line = json.dumps(test)+"\n"
-        self.last.write(line)
+        line = json.dumps(test)
+        return line

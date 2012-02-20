@@ -6,10 +6,17 @@ Created on 2011-11-20
 '''
 
 from scrapy.conf import settings
+from sqlalchemy.engine import create_engine
+from sqlalchemy.orm import mapper, relationship, scoped_session
+from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.schema import MetaData, Table
+from sqlalchemy.types import *
 from twisted.enterprise import adbapi
 import MySQLdb
+import datetime
 import redis
 import threading
+import time
 
 # default values
 redisdbconf = settings.get('REDISDB_CONF')
@@ -52,13 +59,6 @@ DB_PASSWD = mysqldbconf.get('passwd', '123456')
 New Connect database
 '''                               
                              
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import mapper, relationship
-from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.schema import MetaData, Table
-from sqlalchemy.types import *
-import datetime
-import time
 
 NOW = time.strftime('%Y-%m-%d %X', time.localtime())
 
@@ -114,5 +114,9 @@ mapper(ProductPriceObj, product_price_tb)
 MygiftSession = sessionmaker(dbObj)
 
 if __name__ =="__main__":
-    pobj = ProductObj()
-    print pobj.__dict__.keys()
+    session = scoped_session(MygiftSession)
+    query = session.query(ProductObj.url)
+    results = query.filter("last_crawl_time>DATE_SUB(NOW(), INTERVAL 2 HOUR)").limit(1000).all()
+    for url, in results:
+        print url
+    print len(results)
