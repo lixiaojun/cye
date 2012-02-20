@@ -12,6 +12,7 @@ from scrapy.http import Request
 from scrapy.selector import HtmlXPathSelector
 from scrapy.spider import BaseSpider
 from sqlalchemy.orm import scoped_session
+from sqlalchemy.sql.expression import or_
 import hashlib
 import re
 import time
@@ -39,7 +40,7 @@ class JingdongUpdateSpider(BaseSpider):
     def _init_urls(self):
         self.session = scoped_session(MygiftSession)
         query = self.session.query(ProductObj.url)
-        results = query.filter("last_crawl_time<DATE_ADD(NOW(), INTERVAL :time_interval HOUR)").\
+        results = query.filter(or_("last_crawl_time is null", "last_crawl_time<DATE_ADD(NOW(), INTERVAL :time_interval HOUR)")).\
             params(time_interval=crawl_time_interval).limit(update_max_num).all()
         for url, in results:
             self.start_urls.append(url)
@@ -87,7 +88,7 @@ class JingdongUpdateLiteSpider(BaseSpider):
             self.start_urls.extend(results)
             self.log("The number of  links : %d" % len(results), log.INFO)
         else:
-            self.log("Not fount link to update.", log.INFO)
+            self.log("Not found link to update.", log.INFO)
         
 
     def parse(self, response):
