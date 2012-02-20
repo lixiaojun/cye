@@ -42,7 +42,7 @@ REDISDB_CONF = {
 REDIS_UPDATE_URLS_KEY="%s:update"
 
 UPDATE_CRAWL_TIME_INTERVAL=8    #hour Update time interval
-UPDATE_CRAWL_MAX_NUM=3000        #Each update the largest number
+UPDATE_CRAWL_MAX_NUM=2000        #Each update the largest number
 UPDATE_LITE_CRAWL_MAX_NUM = 15   #Every time grab the largest number
 UPDATE_DETAIL_TIEM_INTERVAL = 7  #Updated detail time interval
 
