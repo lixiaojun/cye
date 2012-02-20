@@ -33,7 +33,7 @@ def DeltaTime(newtime, oldtime, mformat = TIME_FORMAT):
     
     ndate = datetime.datetime(newtime[0], newtime[1], newtime[2], newtime[3], newtime[4], newtime[5])
     odate = datetime.datetime(oldtime[0], oldtime[1], oldtime[2], oldtime[3], oldtime[4], oldtime[5])
-    return (ndate - odate).days
+    return abs((ndate - odate).days)
 
 def DeltaSecTime(newtime, oldtime, mformat = TIME_FORMAT):
     newtime = time.strptime(newtime, mformat)
@@ -122,7 +122,7 @@ class CyeFirstPipeline(object):
         if product:
             item['product'] = product
             item['product_id'] = product.id
-            if DeltaTime(str(product.update_time), item['update_time']) < UPDATE_DETAIL_TIEM_INTERVAL:
+            if DeltaTime(item['update_time'], str(product.update_time)) < UPDATE_DETAIL_TIEM_INTERVAL:
                 item['is_update_product'] = False
                 
             query = spider.session.query(ProductPriceObj)
