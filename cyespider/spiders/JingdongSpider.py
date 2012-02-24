@@ -151,7 +151,7 @@ class JingdongSpider(CrawlSpider):
             
         price_url_regexp = r"price.360buyimg.com/gp\d+"
         price_image_url = hx.select("//strong[@class='price']/img/@src").extract()
-        if re.search(price_url_regexp, price_image_url[0]):
+        if len(price_image_url)>0 and re.search(price_url_regexp, price_image_url[0]):
             ploader.add_value('pstatus', STATUS_PRODUCT_ONLINE)
             ploader.add_value('price_image_url', price_image_url)
         else:

@@ -273,7 +273,7 @@ class CyeToDBPipeline(object):
             if item['product_id'] is None or item['is_update_product']:
                 self._item_to_product(item, self.product)
                 self._handle_detail(item, spider, self.product)
-            if 'update_time' in item.keys():
+            if self.hasPriceChange(item['last_price'], item['price']):
                 self.product.last_crawl_time = item['update_time']
     
     def _item_to_product(self, item, product):
