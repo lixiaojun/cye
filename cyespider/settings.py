@@ -16,7 +16,7 @@ DEFAULT_ITEM_CLASS = 'cyespider.items.CyespiderItem'
 USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
 
 
-#SCHEDULER = 'cyecore.scheduler.Scheduler'
+SCHEDULER = 'cyecore.scheduler.Scheduler'
 #SCHEDULER_PERSIST = True
 
 IMAGES_STORE = '/home/admin/static'
@@ -41,8 +41,8 @@ REDISDB_CONF = {
 
 REDIS_UPDATE_URLS_KEY="%s:update"
 
-UPDATE_CRAWL_TIME_INTERVAL=8    #hour Update time interval
-UPDATE_CRAWL_MAX_NUM=2000        #Each update the largest number
+UPDATE_CRAWL_TIME_INTERVAL=25   #hour Update time interval
+UPDATE_CRAWL_MAX_NUM=5000       #Each update the largest number
 UPDATE_LITE_CRAWL_MAX_NUM = 15   #Every time grab the largest number
 UPDATE_DETAIL_TIEM_INTERVAL = 30  #Updated detail time interval
 
@@ -59,6 +59,6 @@ START_URLS ={
                     'http://www.360buy.com/products/652-654-834.html',              #单反镜头
                     'http://www.360buy.com/products/737-794-798.html',              #平板电视
                     'http://www.360buy.com/products/737-794-1199.html',             #迷你音箱
-                    
+                    'http://www.360buy.com/products/737-794-880.html', #洗衣机
                 ],
              }

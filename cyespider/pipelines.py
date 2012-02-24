@@ -114,19 +114,21 @@ class CyeFirstPipeline(object):
         pkey = item['pkey']
         item['product_pkey'] = item['pkey']
         item['last_price'] = None
+        if 'price' not in item.keys():
+            item['price'] = None
         item['product_id'] = None
         item['product'] = ProductObj()
         
-        query = spider.session.query(ProductObj)
-        product = query.filter(ProductObj.pkey == pkey).first()
+        #query = spider.session.query(ProductObj)
+        product = spider.query_product.filter(ProductObj.pkey == pkey).first()
         if product:
             item['product'] = product
             item['product_id'] = product.id
             if DeltaTime(item['update_time'], str(product.update_time)) < UPDATE_DETAIL_TIEM_INTERVAL:
                 item['is_update_product'] = False
                 
-            query = spider.session.query(ProductPriceObj)
-            price = query.filter(ProductPriceObj.product_pkey == pkey).order_by(ProductPriceObj.update_time.desc()).first()
+            #query = spider.session.query(ProductPriceObj)
+            price = spider.query_price.filter(ProductPriceObj.product_pkey == pkey).order_by(ProductPriceObj.update_time.desc()).first()
             if price:
                 item['last_price'] = price.price
     pass
@@ -283,7 +285,9 @@ class CyeToDBPipeline(object):
                 
     def _treate_price(self, item, spider):
         isNew = False
-        if item['last_price'] is None:
+        if item['price'] is None:
+            spider.log("Tesseract Ocr error : %s" % item['url'], log.ERROR)
+        elif item['last_price'] is None:
             isNew = True
         elif self.hasPriceChange(item['last_price'], item['price']):
             isNew = True

@@ -5,7 +5,7 @@ Created on 2012-2-16
 '''
 from cyespider.items import CyeProductLoader
 from cyespider.spiders.JingdongSpider import JingdongSpider
-from libs.CyeTools import MygiftSession, CyeRedis, ProductObj
+from libs.CyeTools import MygiftSession, CyeRedis, ProductObj, ProductPriceObj
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.http import Request
@@ -39,6 +39,9 @@ class JingdongUpdateSpider(BaseSpider):
         
     def _init_urls(self):
         self.session = scoped_session(MygiftSession)
+        self.query_product = self.session.query(ProductObj)
+        self.query_price = self.session.query(ProductPriceObj)
+        
         query = self.session.query(ProductObj.url)
         results = query.filter(or_("last_crawl_time is null", "last_crawl_time<DATE_ADD(NOW(), INTERVAL :time_interval HOUR)")).\
             params(time_interval=crawl_time_interval).limit(update_max_num).all()
@@ -79,6 +82,10 @@ class JingdongUpdateLiteSpider(BaseSpider):
         super(JingdongUpdateLiteSpider, self).__init__(self.name, **kw)
         
     def _init_urls(self):
+        self.session = scoped_session(MygiftSession)
+        self.query_product = self.session.query(ProductObj)
+        self.query_price = self.session.query(ProductPriceObj)
+        
         self.redis_cli = CyeRedis.getInstance()
         self.session = scoped_session(MygiftSession)
         self.update_urls_key = settings.get('REDIS_UPDATE_URLS_KEY', '%s:update') % self.namespace
