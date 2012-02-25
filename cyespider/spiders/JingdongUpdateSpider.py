@@ -43,8 +43,11 @@ class JingdongUpdateSpider(BaseSpider):
         self.query_price = self.session.query(ProductPriceObj)
         
         query = self.session.query(ProductObj.url)
-        results = query.filter(or_("last_crawl_time is null", "last_crawl_time<DATE_ADD(NOW(), INTERVAL :time_interval HOUR)")).\
-            params(time_interval=crawl_time_interval).limit(update_max_num).all()
+        myquery = query.filter(or_("last_crawl_time is null", "last_crawl_time<DATE_ADD(NOW(), INTERVAL :time_interval HOUR)")).\
+            params(time_interval=crawl_time_interval)
+        if update_max_num > 0:
+            myquery = myquery.limit(update_max_num)
+        results = myquery.all()
         for url, in results:
             self.start_urls.append(url)
         self.log('Update the number of links : %d' % len(results), log.INFO)
