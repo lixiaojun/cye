@@ -90,7 +90,7 @@ class SessionPipeline(object):
         if spider.name == 'jingdong_update_lite':
             for url in spider.start_urls:
                 spider.redis_cli.zrem(spider.update_urls_key, url)
-                spider.log('Redis remove the number of links : %d' % len(spider.start_urls), log.INFO)
+            spider.log('Redis remove the number of links : %d' % len(spider.start_urls), log.INFO)
         
     
 
@@ -103,8 +103,18 @@ class CyeFirstPipeline(object):
         pass
         
     def process_item(self, item, spider):
-        self.setInfo(item, spider)
-        return item
+        #If is the right goods, then crawl
+        if self._is_right_product(item):
+            self.setInfo(item, spider)
+            return item
+            
+    
+    def _is_right_product(self, item):
+        flag = False
+        if 'title' in item.keys() and item['title']:
+            flag = True
+        return flag
+            
     
     def setInfo(self, item, spider):
         if 'pkey' in item.keys() and item['pkey'] is not None:
@@ -125,8 +135,7 @@ class CyeFirstPipeline(object):
             item['product'] = product
             item['product_id'] = product.id
             if DeltaTime(item['update_time'], str(product.update_time)) < UPDATE_DETAIL_TIEM_INTERVAL:
-                item['is_update_product'] = False
-                
+                item['is_update_product'] = False    
             #query = spider.session.query(ProductPriceObj)
             price = spider.query_price.filter(ProductPriceObj.product_pkey == pkey).order_by(ProductPriceObj.update_time.desc()).first()
             if price:
@@ -291,7 +300,8 @@ class CyeToDBPipeline(object):
             isNew = True
         elif self.hasPriceChange(item['last_price'], item['price']):
             isNew = True
-             
+        
+        spider.log("Price Status : %s" % isNew, log.DEBUG)     
         if isNew:
             self.price = ProductPriceObj()
             self._handle_price(item, spider, self.price)
@@ -318,10 +328,11 @@ class CyeToDBPipeline(object):
             #self.testChange(item)
 
     def hasPriceChange(self, one, two):
-        if (two is not None) and cmp(one, two) == -1:
-            return True
-        else:
-            return False
+        flag = False
+        if two is not None:
+            if str(one) != str(two):
+                flag = True
+        return flag
     
     def testChange(self, item):
         test={}

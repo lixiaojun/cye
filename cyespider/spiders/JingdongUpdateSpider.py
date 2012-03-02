@@ -95,7 +95,9 @@ class JingdongUpdateLiteSpider(BaseSpider):
         results = self.redis_cli.zrange(self.update_urls_key, 0, lite_max_num, withscores=True)
         
         if results:
-            self.start_urls.extend(results)
+            for one in results:
+                self.start_urls.append(one[0]) 
+            #self.start_urls.extend(results)
             self.log("The number of  links : %d" % len(results), log.INFO)
         else:
             self.log("Not found link to update.", log.INFO)
