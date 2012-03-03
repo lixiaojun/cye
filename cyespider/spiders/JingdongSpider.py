@@ -159,7 +159,6 @@ class JingdongSpider(CrawlSpider):
             ploader.add_value('price_image_url', None)
         ploader.add_xpath('origin_image_url', "//div[@id='preview']//img/@src")
         
-        
         ploader.add_xpath('detail', "//ul[@id='i-detail']")
         
         return ploader.load_item()

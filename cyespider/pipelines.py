@@ -70,18 +70,19 @@ class SessionPipeline(object):
         pass
         
     def spider_closed(self, spider):
+        spider.session.close()
+        self._treate_closed(spider)
+        '''
         try:
             spider.session.commit()
             spider.log("%s : Session commit." % self.__class__, log.INFO)
-            
-            self._treate_closed(spider)
         except:
             spider.session.rollback()
             spider.log("%s : Session rollback." % self.__class__, log.ERROR)
             raise
         finally:
             spider.session.commit()
-            
+        ''' 
         
     def process_item(self, item, spider):
         return item
@@ -319,13 +320,33 @@ class CyeToDBPipeline(object):
         self._treate_product(item, spider)
         self._treate_price(item, spider)      
         
-        if self.product:
-            spider.session.add(self.product)
+        self._sub_session_commit(spider.session)
         if self.price:
-            spider.session.add(self.price)
             spider.log("%s" % self.__class__, log.INFO)
             spider.log("Update Price : %s" % self.testChange(item), log.DEBUG)
             #self.testChange(item)
+
+    def _sub_session_commit(self, session):
+        session.begin(subtransactions=True)
+        try:
+            self._sub_session_b(session)
+            session.commit()  # transaction is committed here
+        except:
+            session.rollback() # rolls back the transaction
+            raise
+        
+    def _sub_session_b(self, session):
+        session.begin(subtransactions=True)
+        try:
+            if self.product:
+                session.add(self.product)
+            if self.price:
+                session.add(self.price)
+            session.commit()    # transaction is not committed yet
+        except:
+            session.rollback()  # rolls back the transaction, in this case
+                                # the one that was initiated in method_a().
+            raise
 
     def hasPriceChange(self, one, two):
         flag = False

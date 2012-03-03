@@ -111,7 +111,7 @@ mapper(ProductObj, product_tb, properties={'history_price' : relationship(Produc
 #mapper(ProductObj, product_tb)
 mapper(ProductPriceObj, product_price_tb)
 
-MygiftSession = sessionmaker(dbObj)
+MygiftSession = sessionmaker(dbObj, autocommit=True)
 
 if __name__ =="__main__":
     session = scoped_session(MygiftSession)

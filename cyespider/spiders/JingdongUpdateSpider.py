@@ -42,14 +42,13 @@ class JingdongUpdateSpider(BaseSpider):
         self.query_product = self.session.query(ProductObj)
         self.query_price = self.session.query(ProductPriceObj)
         
-        query = self.session.query(ProductObj.url)
-        myquery = query.filter(or_("last_crawl_time is null", "last_crawl_time<DATE_ADD(NOW(), INTERVAL :time_interval HOUR)")).\
+        myquery = self.query_product.filter(or_("last_crawl_time is null", "last_crawl_time<DATE_SUB(NOW(), INTERVAL :time_interval HOUR)")).\
             params(time_interval=crawl_time_interval)
         if update_max_num > 0:
             myquery = myquery.limit(update_max_num)
         results = myquery.all()
-        for url, in results:
-            self.start_urls.append(url)
+        for prod in results:
+            self.start_urls.append(prod.url)
         self.log('Update the number of links : %d' % len(results), log.INFO)
 
     def parse(self, response):
@@ -90,13 +89,16 @@ class JingdongUpdateLiteSpider(BaseSpider):
         self.query_price = self.session.query(ProductPriceObj)
         
         self.redis_cli = CyeRedis.getInstance()
-        self.session = scoped_session(MygiftSession)
         self.update_urls_key = settings.get('REDIS_UPDATE_URLS_KEY', '%s:update') % self.namespace
         results = self.redis_cli.zrange(self.update_urls_key, 0, lite_max_num, withscores=True)
         
         if results:
             for one in results:
-                self.start_urls.append(one[0]) 
+                pkey = hashlib.md5(one[0]).hexdigest()
+                product = self.query_product.filter(ProductObj.pkey == pkey).filter(or_("last_crawl_time is null", "last_crawl_time<DATE_SUB(NOW(), INTERVAL :time_interval HOUR)")).\
+            params(time_interval=crawl_time_interval).first()
+                if product:
+                    self.start_urls.append(one[0]) 
             #self.start_urls.extend(results)
             self.log("The number of  links : %d" % len(results), log.INFO)
         else:
